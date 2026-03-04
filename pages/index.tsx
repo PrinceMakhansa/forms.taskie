@@ -25,7 +25,7 @@ export default function HomePage() {
         <div className="w-full max-w-4xl px-6 py-16 text-center">
           <div className="mx-auto max-w-2xl rounded-2xl bg-white border-2 border-blue-200 px-8 py-12 shadow-md">
             <p className="mb-2 text-sm font-semibold uppercase text-blue-600">Powered by</p>
-            <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-blue-700">
+            <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-blue-700" style={{ fontFamily: "'Stardom', sans-serif" }}>
               <BlurText
                 text="Taskie"
                 animateBy="letters"
@@ -43,7 +43,7 @@ export default function HomePage() {
               ) : status === 'unauthenticated' ? (
                 <Button
                   size="lg"
-                  onClick={() => signIn('discord', { callbackUrl: '/auth/after' })}
+                  onClick={() => signIn('discord', { callbackUrl: '/' })}
                 >
                   Login
                 </Button>
