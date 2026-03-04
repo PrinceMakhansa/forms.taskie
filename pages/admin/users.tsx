@@ -208,7 +208,7 @@ export default function AdminUsersPage() {
 
       {/* Database Admins */}
       <div className="rounded-xl border border-warm-gray-200 bg-white p-6 shadow-soft animate-fadeIn">
-        <h2 className="text-lg font-bold text-warm-gray-900 mb-4">Database Admins</h2>
+        <h2 className="text-lg font-bold text-warm-gray-900 mb-4">Admins</h2>
         
         {data?.admins && data.admins.length > 0 ? (
           <div className="space-y-3">
