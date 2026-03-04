@@ -35,7 +35,12 @@ export default async function handler(
       const hasAccess = (form as any).isPublished || canEditForm(userId, form as any, admin);
 
       if (!hasAccess) {
-        return res.status(403).json({ error: 'Forbidden' });
+        // Return specific error code for unpublished forms
+        return res.status(403).json({ 
+          error: 'Form not available',
+          code: 'FORM_UNPUBLISHED',
+          message: 'This form is not currently accepting responses.'
+        });
       }
 
       return res.status(200).json(form);

@@ -30,11 +30,11 @@ export default async function handler(
   // Check if user is an editor or owner of any form
   try {
     await connectToMongo();
+    
     const hasFormAccess = await Form.exists({
       $or: [
         { createdBy: userId },
-        { 'editors.discordId': userId }, // New object format
-        { editors: userId }, // Old string format for backwards compatibility
+        { 'editors.discordId': userId },
       ],
     });
 
