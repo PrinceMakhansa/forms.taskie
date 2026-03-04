@@ -30,7 +30,8 @@ export default async function handler(
           $or: [
             { isPublished: true },
             { createdBy: userId },
-            { editors: userId },
+            { 'editors.discordId': userId }, // New object format
+            { editors: userId }, // Old string format for backwards compatibility
           ],
         };
       } else {
