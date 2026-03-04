@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession, signIn } from 'next-auth/react';
 import useSWR from 'swr';
 import { FormField, FormSection } from '@/lib/validation';
-import { IForm } from '@/models/Form';
+import { IForm, FormEditor } from '@/models/Form';
 import { fetcher, isValidDiscordId } from './utils';
 
 export function useFormDetail() {
@@ -52,8 +52,9 @@ export function useFormDetail() {
   const [linkCopied, setLinkCopied] = useState(false);
 
   // Editors state
-  const [editors, setEditors] = useState<string[]>([]);
+  const [editors, setEditors] = useState<FormEditor[]>([]);
   const [newEditorId, setNewEditorId] = useState('');
+  const [newEditorUsername, setNewEditorUsername] = useState('');
   const [editorsError, setEditorsError] = useState<string | null>(null);
   const [editorsSaving, setEditorsSaving] = useState(false);
 
@@ -69,7 +70,12 @@ export function useFormDetail() {
     if (form) {
       setFormTitle(form.title);
       setFormDescription(form.description || '');
-      setEditors((form as any).editors || []);
+      // Handle both old string format and new object format for backwards compatibility
+      const rawEditors = (form as any).editors || [];
+      const normalizedEditors: FormEditor[] = rawEditors.map((e: string | FormEditor) => 
+        typeof e === 'string' ? { discordId: e } : e
+      );
+      setEditors(normalizedEditors);
     }
   }, [form]);
 
@@ -213,6 +219,7 @@ export function useFormDetail() {
 
   const handleAddEditor = async () => {
     const trimmedId = newEditorId.trim();
+    const trimmedUsername = newEditorUsername.trim();
     setEditorsError(null);
 
     if (!trimmedId) {
@@ -225,7 +232,7 @@ export function useFormDetail() {
       return;
     }
 
-    if (editors.includes(trimmedId)) {
+    if (editors.some(e => e.discordId === trimmedId)) {
       setEditorsError('This user is already an editor');
       return;
     }
@@ -237,7 +244,11 @@ export function useFormDetail() {
 
     setEditorsSaving(true);
     try {
-      const updatedEditors = [...editors, trimmedId];
+      const newEditor: FormEditor = { 
+        discordId: trimmedId,
+        ...(trimmedUsername && { username: trimmedUsername })
+      };
+      const updatedEditors = [...editors, newEditor];
       const res = await fetch(`/api/forms/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -247,6 +258,7 @@ export function useFormDetail() {
       if (res.ok) {
         setEditors(updatedEditors);
         setNewEditorId('');
+        setNewEditorUsername('');
         showToast('Editor added successfully');
         await mutate();
       } else {
@@ -260,10 +272,10 @@ export function useFormDetail() {
     }
   };
 
-  const handleRemoveEditor = async (editorId: string) => {
+  const handleRemoveEditor = async (discordId: string) => {
     setEditorsSaving(true);
     try {
-      const updatedEditors = editors.filter((e) => e !== editorId);
+      const updatedEditors = editors.filter((e) => e.discordId !== discordId);
       const res = await fetch(`/api/forms/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -316,6 +328,8 @@ export function useFormDetail() {
     editors,
     newEditorId,
     setNewEditorId,
+    newEditorUsername,
+    setNewEditorUsername,
     editorsError,
     setEditorsError,
     editorsSaving,

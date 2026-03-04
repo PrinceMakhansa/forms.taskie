@@ -33,7 +33,8 @@ export default async function handler(
     const hasFormAccess = await Form.exists({
       $or: [
         { createdBy: userId },
-        { editors: userId },
+        { 'editors.discordId': userId }, // New object format
+        { editors: userId }, // Old string format for backwards compatibility
       ],
     });
 

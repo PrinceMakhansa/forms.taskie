@@ -38,6 +38,8 @@ export default function FormDetailPage() {
     editors,
     newEditorId,
     setNewEditorId,
+    newEditorUsername,
+    setNewEditorUsername,
     editorsError,
     setEditorsError,
     editorsSaving,
@@ -163,6 +165,8 @@ export default function FormDetailPage() {
             editors={editors}
             newEditorId={newEditorId}
             setNewEditorId={setNewEditorId}
+            newEditorUsername={newEditorUsername}
+            setNewEditorUsername={setNewEditorUsername}
             editorsError={editorsError}
             setEditorsError={setEditorsError}
             editorsSaving={editorsSaving}

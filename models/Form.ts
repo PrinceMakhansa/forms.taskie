@@ -1,13 +1,18 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 import { FormField, FormSection } from '@/lib/validation';
 
+export interface FormEditor {
+  discordId: string;
+  username?: string;
+}
+
 interface IForm extends Document {
   title: string;
   description?: string;
   fields: FormField[];
   sections?: FormSection[];
   createdBy: string;
-  editors: string[]; // Array of Discord user IDs who can edit
+  editors: FormEditor[]; // Array of editor objects with Discord ID and optional username
   createdAt: Date;
   updatedAt: Date;
   isPublished: boolean;
@@ -66,7 +71,10 @@ const formSchema = new Schema<IForm>(
       required: true,
     },
     editors: {
-      type: [String],
+      type: [{
+        discordId: { type: String, required: true },
+        username: { type: String },
+      }],
       default: [],
     },
     isPublished: {

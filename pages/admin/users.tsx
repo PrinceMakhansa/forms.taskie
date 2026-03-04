@@ -164,13 +164,9 @@ export default function AdminUsersPage() {
               id="discordId"
               value={newDiscordId}
               onChange={(e) => setNewDiscordId(e.target.value)}
-              placeholder="e.g., 123456789012345678"
               className="w-full rounded-lg border border-warm-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               required
             />
-            <p className="mt-1 text-xs text-warm-gray-500">
-              Enable Developer Mode in Discord, right-click a user, and select &quot;Copy User ID&quot;
-            </p>
           </div>
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-warm-gray-700 mb-1">
@@ -181,12 +177,8 @@ export default function AdminUsersPage() {
               id="username"
               value={newUsername}
               onChange={(e) => setNewUsername(e.target.value)}
-              placeholder="e.g., johndoe"
               className="w-full rounded-lg border border-warm-gray-300 px-4 py-2 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <p className="mt-1 text-xs text-warm-gray-500">
-              For your reference only - helps identify the admin
-            </p>
           </div>
           <Button type="submit" disabled={isSubmitting || !newDiscordId.trim()}>
             {isSubmitting ? 'Adding...' : 'Add Admin'}
@@ -197,10 +189,7 @@ export default function AdminUsersPage() {
       {/* Environment Admins */}
       {data?.envAdmins && data.envAdmins.length > 0 && (
         <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-6 animate-fadeIn">
-          <h2 className="text-lg font-bold text-warm-gray-900 mb-2">Environment Admins</h2>
-          <p className="text-sm text-warm-gray-600 mb-4">
-            These admins are configured via ADMIN_DISCORD_IDS environment variable and cannot be removed from here.
-          </p>
+          <h2 className="text-lg font-bold text-warm-gray-900 mb-2">Developers</h2>
           <div className="space-y-2">
             {data.envAdmins.map((id) => (
               <div key={id} className="flex items-center justify-between rounded-lg bg-white/60 px-4 py-2">
@@ -268,17 +257,6 @@ export default function AdminUsersPage() {
             <p className="text-sm text-warm-gray-400">Add admins using the form above.</p>
           </div>
         )}
-      </div>
-
-      {/* Info */}
-      <div className="mt-6 rounded-xl border border-blue-100 bg-blue-50/50 p-4">
-        <h3 className="text-sm font-medium text-blue-800 mb-1">How Admin Access Works</h3>
-        <ul className="text-xs text-blue-700 space-y-1">
-          <li>• <strong>Environment admins</strong> are set via ADMIN_DISCORD_IDS and take highest priority</li>
-          <li>• <strong>Database admins</strong> can be added/removed from this panel</li>
-          <li>• If no admins are configured anywhere, all authenticated users get admin access (dev mode)</li>
-          <li>• Admins can create forms, manage all forms, and add/remove other admins</li>
-        </ul>
       </div>
     </Layout>
   );

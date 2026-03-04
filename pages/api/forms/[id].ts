@@ -71,7 +71,18 @@ export default async function handler(
         if (form.createdBy !== userId && !admin) {
           return res.status(403).json({ error: 'Only the form owner or admin can modify editors' });
         }
-        form.editors = editors.filter((e: string) => typeof e === 'string' && e.trim());
+        // Handle both old string format and new object format
+        form.editors = editors
+          .map((e: any) => {
+            if (typeof e === 'string') {
+              return { discordId: e.trim() };
+            }
+            return {
+              discordId: e.discordId?.trim() || '',
+              ...(e.username?.trim() && { username: e.username.trim() }),
+            };
+          })
+          .filter((e: any) => e.discordId);
       }
 
       // If form content fields are provided, validate them

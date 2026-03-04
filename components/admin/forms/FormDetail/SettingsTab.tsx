@@ -1,21 +1,23 @@
 import React from 'react';
-import { IForm } from '@/models/Form';
+import { IForm, FormEditor } from '@/models/Form';
 import Button from '@/components/Button';
 
 interface SettingsTabProps {
   form: IForm;
   formLink: string;
   linkCopied: boolean;
-  editors: string[];
+  editors: FormEditor[];
   newEditorId: string;
   setNewEditorId: (id: string) => void;
+  newEditorUsername: string;
+  setNewEditorUsername: (username: string) => void;
   editorsError: string | null;
   setEditorsError: (error: string | null) => void;
   editorsSaving: boolean;
   handleTogglePublish: () => void;
   handleCopyLink: () => void;
   handleAddEditor: () => void;
-  handleRemoveEditor: (editorId: string) => void;
+  handleRemoveEditor: (discordId: string) => void;
   handleDeleteForm: () => void;
 }
 
@@ -26,6 +28,8 @@ export default function SettingsTab({
   editors,
   newEditorId,
   setNewEditorId,
+  newEditorUsername,
+  setNewEditorUsername,
   editorsError,
   setEditorsError,
   editorsSaving,
@@ -155,35 +159,45 @@ export default function SettingsTab({
           </p>
 
           {/* Add editor input */}
-          <div className="flex gap-2">
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newEditorId}
+                onChange={(e) => {
+                  setNewEditorId(e.target.value);
+                  setEditorsError(null);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddEditor()}
+                placeholder="Discord User ID (e.g., 123456789012345678)"
+                className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+              <button
+                onClick={handleAddEditor}
+                disabled={editorsSaving || !newEditorId.trim()}
+                className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {editorsSaving ? (
+                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                )}
+                Add
+              </button>
+            </div>
             <input
               type="text"
-              value={newEditorId}
-              onChange={(e) => {
-                setNewEditorId(e.target.value);
-                setEditorsError(null);
-              }}
+              value={newEditorUsername}
+              onChange={(e) => setNewEditorUsername(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddEditor()}
-              placeholder="Enter Discord User ID (e.g., 123456789012345678)"
-              className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="Username (optional, for reference)"
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
             />
-            <button
-              onClick={handleAddEditor}
-              disabled={editorsSaving || !newEditorId.trim()}
-              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {editorsSaving ? (
-                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              ) : (
-                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-              )}
-              Add
-            </button>
           </div>
 
           {editorsError && (
@@ -193,19 +207,24 @@ export default function SettingsTab({
           {/* Editors list */}
           {editors.length > 0 ? (
             <div className="space-y-2">
-              {editors.map((editorId) => (
+              {editors.map((editor) => (
                 <div
-                  key={editorId}
+                  key={editor.discordId}
                   className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2"
                 >
                   <div className="flex items-center gap-2">
                     <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
-                    <span className="text-sm font-mono text-gray-700">{editorId}</span>
+                    <div>
+                      <span className="text-sm font-mono text-gray-700">{editor.discordId}</span>
+                      {editor.username && (
+                        <span className="ml-2 text-sm text-gray-500">@{editor.username}</span>
+                      )}
+                    </div>
                   </div>
                   <button
-                    onClick={() => handleRemoveEditor(editorId)}
+                    onClick={() => handleRemoveEditor(editor.discordId)}
                     disabled={editorsSaving}
                     className="rounded p-1 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
                     title="Remove editor"

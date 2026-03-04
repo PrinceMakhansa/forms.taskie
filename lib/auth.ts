@@ -35,16 +35,22 @@ export async function isAdmin(userId: string | undefined): Promise<boolean> {
   }
 }
 
+import { FormEditor } from '@/models/Form';
+
 // Check if user can edit a form (owner, editor, or admin)
 export function canEditForm(
   userId: string | undefined,
-  form: { createdBy: string; editors?: string[] },
+  form: { createdBy: string; editors?: (string | FormEditor)[] },
   userIsAdmin: boolean
 ): boolean {
   if (!userId) return false;
   if (userIsAdmin) return true;
   if (form.createdBy === userId) return true;
-  if (form.editors?.includes(userId)) return true;
+  // Handle both old string format and new object format for backwards compatibility
+  if (form.editors?.some(editor => {
+    if (typeof editor === 'string') return editor === userId;
+    return editor.discordId === userId;
+  })) return true;
   return false;
 }
 
