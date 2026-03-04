@@ -1,12 +1,12 @@
 import React from 'react';
 import Layout from '@/components/Layout';
 import FormBuilder from '@/components/FormBuilder';
-import Toast from './Toast';
-import FormHeader from './FormHeader';
-import TabNavigation from './TabNavigation';
-import ResponsesTab from './ResponsesTab';
-import SettingsTab from './SettingsTab';
-import { useFormDetail } from './hooks/useFormDetail';
+import Toast from '@/components/admin/forms/FormDetail/Toast';
+import FormHeader from '@/components/admin/forms/FormDetail/FormHeader';
+import TabNavigation from '@/components/admin/forms/FormDetail/TabNavigation';
+import ResponsesTab from '@/components/admin/forms/FormDetail/ResponsesTab';
+import SettingsTab from '@/components/admin/forms/FormDetail/SettingsTab';
+import { useFormDetail } from '@/components/admin/forms/FormDetail/useFormDetail';
 
 export default function FormDetailPage() {
   const {

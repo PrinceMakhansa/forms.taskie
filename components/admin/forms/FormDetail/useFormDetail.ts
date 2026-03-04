@@ -4,7 +4,7 @@ import { useSession, signIn } from 'next-auth/react';
 import useSWR from 'swr';
 import { FormField, FormSection } from '@/lib/validation';
 import { IForm } from '@/models/Form';
-import { fetcher, isValidDiscordId } from '../utils';
+import { fetcher, isValidDiscordId } from './utils';
 
 export function useFormDetail() {
   const router = useRouter();
