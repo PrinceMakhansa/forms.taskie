@@ -28,4 +28,6 @@ yarn-debug.log*
 yarn-error.log*
 
 # Scripts
-scripts/seed-moderator-eval-form.js
+scripts/seed-moderator-eval-form.js 
+scripts/seed-event-team-form.js
+scripts/migrate-public-ids.js

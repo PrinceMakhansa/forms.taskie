@@ -15,6 +15,9 @@ dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 
 require('dotenv').config({ path: '.env.local' });
 const mongoose = require('mongoose');
+const { customAlphabet } = require('nanoid');
+
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 16);
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
@@ -46,6 +49,7 @@ const formSchema = new mongoose.Schema(
     fields:      { type: [formFieldSchema], required: true },
     createdBy:   { type: String, required: true },
     isPublished: { type: Boolean, default: false },
+    publicId:    { type: String, unique: true },
   },
   { timestamps: true }
 );
@@ -57,6 +61,7 @@ const Form =
 const formData = {
   title:
     'Event Team Application Form',
+  publicId: nanoid(),
   description:
     "Thank you for your interest in joining the Event Team on Harsh's server! " +
     'The Event Team plays a huge role in bringing exciting and fun experiences ' +
@@ -159,7 +164,7 @@ const formData = {
     console.log(`  ID    : ${form._id}`);
     console.log(`  Fields: ${form.fields.length}`);
     console.log(
-      `\nShare the form at: /forms/${form._id}`
+      `\nShare the form at: /forms/${form.publicId}`
     );
 
     process.exit(0);
