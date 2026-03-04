@@ -1,5 +1,8 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
+import { customAlphabet } from 'nanoid';
 import { FormField, FormSection } from '@/lib/validation';
+
+const nanoid = customAlphabet('0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz', 16);
 
 export interface FormEditor {
   discordId: string;
@@ -7,6 +10,7 @@ export interface FormEditor {
 }
 
 interface IForm extends Document {
+  publicId: string;
   title: string;
   description?: string;
   banner?: string; // Banner image URL
@@ -46,6 +50,12 @@ const sectionSchema = new Schema(
 
 const formSchema = new Schema<IForm>(
   {
+    publicId: {
+      type: String,
+      required: true,
+      unique: true,
+      default: () => nanoid(),
+    },
     title: {
       type: String,
       required: true,
@@ -93,6 +103,7 @@ const formSchema = new Schema<IForm>(
 );
 
 // Index for common queries
+formSchema.index({ publicId: 1 }, { unique: true });
 formSchema.index({ createdBy: 1, createdAt: -1 });
 formSchema.index({ isPublished: 1 });
 

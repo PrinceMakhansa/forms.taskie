@@ -96,7 +96,7 @@ export default function FormDetailPage() {
     );
   }
 
-  const formLink = typeof window !== 'undefined' ? `${window.location.origin}/forms/${form._id}` : '';
+  const formLink = typeof window !== 'undefined' ? `${window.location.origin}/forms/${(form as any).publicId || form._id}` : '';
 
   return (
     <Layout isAdmin={true}>

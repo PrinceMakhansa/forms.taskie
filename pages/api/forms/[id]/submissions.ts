@@ -13,7 +13,7 @@ export default async function handler(
 ) {
   const { id } = req.query;
 
-  if (!id || typeof id !== 'string' || !Types.ObjectId.isValid(id)) {
+  if (!id || typeof id !== 'string') {
     return res.status(400).json({ error: 'Invalid form ID' });
   }
 
@@ -28,7 +28,10 @@ export default async function handler(
   try {
     await connectToMongo();
 
-    const form = await Form.findById(id);
+    const subsQuery = Types.ObjectId.isValid(id)
+      ? { $or: [{ publicId: id }, { _id: id }] }
+      : { publicId: id };
+    const form = await Form.findOne(subsQuery);
     if (!form) {
       return res.status(404).json({ error: 'Form not found' });
     }
@@ -44,12 +47,12 @@ export default async function handler(
       const skip = (page - 1) * limit;
 
       const [submissions, total] = await Promise.all([
-        Submission.find({ formId: id })
+        Submission.find({ formId: form._id })
           .sort({ submittedAt: -1 })
           .skip(skip)
           .limit(limit)
           .lean(),
-        Submission.countDocuments({ formId: id }),
+        Submission.countDocuments({ formId: form._id }),
       ]);
 
       return res.status(200).json({
@@ -71,7 +74,7 @@ export default async function handler(
         
         const result = await Submission.findOneAndDelete({
           _id: submissionId,
-          formId: id,
+          formId: form._id,
         });
         
         if (!result) {
@@ -82,7 +85,7 @@ export default async function handler(
       }
       
       // Delete all submissions for this form
-      const result = await Submission.deleteMany({ formId: id });
+      const result = await Submission.deleteMany({ formId: form._id });
       return res.status(200).json({
         message: `Deleted ${result.deletedCount} submissions`,
         deletedCount: result.deletedCount,

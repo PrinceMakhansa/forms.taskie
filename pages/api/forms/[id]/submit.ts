@@ -23,7 +23,7 @@ export default async function handler(
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  if (!id || typeof id !== 'string' || !Types.ObjectId.isValid(id)) {
+  if (!id || typeof id !== 'string') {
     return res.status(400).json({ error: 'Invalid form ID' });
   }
 
@@ -37,7 +37,10 @@ export default async function handler(
   try {
     await connectToMongo();
 
-    const form = await Form.findById(id);
+    const submitQuery = Types.ObjectId.isValid(id)
+      ? { $or: [{ publicId: id }, { _id: id }] }
+      : { publicId: id };
+    const form = await Form.findOne(submitQuery);
 
     if (!form) {
       return res.status(404).json({ error: 'Form not found' });

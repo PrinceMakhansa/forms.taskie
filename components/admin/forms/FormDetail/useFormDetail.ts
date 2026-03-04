@@ -161,7 +161,7 @@ export function useFormDetail() {
   };
 
   const handleCopyLink = () => {
-    const link = `${window.location.origin}/forms/${form?._id}`;
+    const link = `${window.location.origin}/forms/${(form as any)?.publicId || form?._id}`;
     navigator.clipboard.writeText(link);
     setLinkCopied(true);
     setTimeout(() => setLinkCopied(false), 2000);

@@ -13,7 +13,7 @@ export default async function handler(
 ) {
   const { id } = req.query;
 
-  if (!id || typeof id !== 'string' || !Types.ObjectId.isValid(id)) {
+  if (!id || typeof id !== 'string') {
     return res.status(400).json({ error: 'Invalid form ID' });
   }
 
@@ -23,7 +23,10 @@ export default async function handler(
     await connectToMongo();
 
     if (req.method === 'GET') {
-      const form = await Form.findById(id).lean();
+      const query = Types.ObjectId.isValid(id)
+        ? { $or: [{ publicId: id }, { _id: id }] }
+        : { publicId: id };
+      const form = await Form.findOne(query).lean();
 
       if (!form) {
         return res.status(404).json({ error: 'Form not found' });
@@ -52,7 +55,10 @@ export default async function handler(
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const form = await Form.findById(id);
+      const putQuery = Types.ObjectId.isValid(id)
+        ? { $or: [{ publicId: id }, { _id: id }] }
+        : { publicId: id };
+      const form = await Form.findOne(putQuery);
       if (!form) {
         return res.status(404).json({ error: 'Form not found' });
       }
@@ -126,7 +132,10 @@ export default async function handler(
         return res.status(401).json({ error: 'Unauthorized' });
       }
 
-      const form = await Form.findById(id);
+      const delQuery = Types.ObjectId.isValid(id)
+        ? { $or: [{ publicId: id }, { _id: id }] }
+        : { publicId: id };
+      const form = await Form.findOne(delQuery);
       if (!form) {
         return res.status(404).json({ error: 'Form not found' });
       }
@@ -139,7 +148,7 @@ export default async function handler(
         return res.status(403).json({ error: 'Forbidden' });
       }
 
-      await Form.findByIdAndDelete(id);
+      await Form.deleteOne(delQuery);
 
       return res.status(200).json({ message: 'Form deleted' });
     }
