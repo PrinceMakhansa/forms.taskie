@@ -37,11 +37,20 @@ export default function FormPage() {
           const errorData = await res.json();
           if (errorData.code === 'FORM_UNPUBLISHED') {
             setFormUnavailable(true);
+            setIsLoading(false);
             return;
           }
           throw new Error('Failed to fetch form');
         }
         const data = await res.json();
+        
+        // Check if form is published - admins/editors can fetch but shouldn't fill unpublished forms
+        if (!data.isPublished) {
+          setFormUnavailable(true);
+          setIsLoading(false);
+          return;
+        }
+        
         setForm(data);
 
         // Initialize form data
