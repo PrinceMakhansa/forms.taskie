@@ -74,11 +74,18 @@ export default function AdminDashboard() {
         <h2 className="text-2xl font-bold text-warm-gray-900">
           My Forms
         </h2>
-        {isAdmin && (
-          <Link href="/admin/forms/new">
-            <Button>Create New Form</Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-3">
+          {isAdmin && (
+            <>
+              <Link href="/admin/users">
+                <Button variant="secondary">Manage Admins</Button>
+              </Link>
+              <Link href="/admin/forms/new">
+                <Button>Create New Form</Button>
+              </Link>
+            </>
+          )}
+        </div>
       </div>
 
       {isLoading ? (
