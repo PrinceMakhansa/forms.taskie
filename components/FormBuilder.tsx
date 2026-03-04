@@ -32,13 +32,13 @@ interface FormBuilderProps {
 }
 
 const FIELD_TYPES = [
-  { value: 'text', label: 'Short answer', icon: '─' },
-  { value: 'textarea', label: 'Paragraph', icon: '≡' },
-  { value: 'email', label: 'Email', icon: '@' },
-  { value: 'select', label: 'Dropdown', icon: '▾' },
-  { value: 'radio', label: 'Multiple choice', icon: '◉' },
-  { value: 'checkbox', label: 'Checkboxes', icon: '☑' },
-  { value: 'date', label: 'Date', icon: '📅' },
+  { value: 'text', label: 'Short answer' },
+  { value: 'textarea', label: 'Paragraph' },
+  { value: 'email', label: 'Email' },
+  { value: 'select', label: 'Dropdown' },
+  { value: 'radio', label: 'Multiple choice' },
+  { value: 'checkbox', label: 'Checkboxes' },
+  { value: 'date', label: 'Date' },
 ] as const;
 
 function generateId(): string {
@@ -628,7 +628,7 @@ function FieldCard({
               >
                 {FIELD_TYPES.map((type) => (
                   <option key={type.value} value={type.value}>
-                    {type.icon} {type.label}
+                    {type.label}
                   </option>
                 ))}
               </select>
