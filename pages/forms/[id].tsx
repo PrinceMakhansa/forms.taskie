@@ -19,6 +19,7 @@ export default function FormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formUnavailable, setFormUnavailable] = useState(false);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -81,6 +82,8 @@ export default function FormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validate the final section before submitting
+    if (!validateCurrentSection()) return;
     setIsSubmitting(true);
     setErrors({});
 
@@ -193,6 +196,54 @@ export default function FormPage() {
     );
   }
 
+  // Derive sorted sections & fields once
+  const sortedSections = form?.sections && form.sections.length > 0
+    ? [...(form.sections as any[])].sort((a, b) => a.order - b.order)
+    : null;
+  const sortedFields = form
+    ? [...form.fields].sort((a: any, b: any) => a.order - b.order)
+    : [];
+  const hasSections = !!sortedSections && sortedSections.length > 0;
+  const totalSections = hasSections ? sortedSections!.length : 1;
+
+  const getFieldsForSection = (sectionIndex: number) => {
+    if (!hasSections) return sortedFields;
+    const section = sortedSections![sectionIndex];
+    return sortedFields.filter((f: any) => f.sectionId === section.id);
+  };
+
+  const validateCurrentSection = (): boolean => {
+    const fields = getFieldsForSection(currentSectionIndex);
+    const newErrors: Record<string, string> = {};
+    fields.forEach((field: any) => {
+      if (field.required) {
+        const val = formData[field.id];
+        if (field.type === 'checkbox') {
+          // checkbox only fails if required and not checked
+          if (!val) newErrors[field.id] = 'This field is required';
+        } else if (!val || (typeof val === 'string' && val.trim() === '')) {
+          newErrors[field.id] = 'This field is required';
+        }
+      }
+    });
+    if (Object.keys(newErrors).length > 0) {
+      setErrors((prev) => ({ ...prev, ...newErrors }));
+      return false;
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (!validateCurrentSection()) return;
+    setCurrentSectionIndex((prev) => Math.min(prev + 1, totalSections - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setCurrentSectionIndex((prev) => Math.max(prev - 1, 0));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <Layout>
       <FormContainer
@@ -207,57 +258,80 @@ export default function FormPage() {
             </div>
           )}
 
-          {(() => {
-            const sortedFields = [...form.fields].sort((a: any, b: any) => a.order - b.order);
-            const hasSections = form.sections && form.sections.length > 0;
-
-            if (hasSections) {
-              const sortedSections = [...(form.sections as any[])].sort((a, b) => a.order - b.order);
-              return sortedSections.map((section: any, sectionIndex: number) => {
-                const sectionFields = sortedFields.filter((f: any) => f.sectionId === section.id);
-                if (sectionFields.length === 0) return null;
-
-                return (
+          {/* Progress indicator (only when multi-section) */}
+          {hasSections && totalSections > 1 && (
+            <div className="mb-2">
+              {/* Step counter */}
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-gray-700">
+                  Section {currentSectionIndex + 1} of {totalSections}
+                </span>
+                <span className="text-sm text-gray-500">
+                  {Math.round(((currentSectionIndex + 1) / totalSections) * 100)}%
+                </span>
+              </div>
+              {/* Progress bar */}
+              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-blue-600 rounded-full transition-all duration-500 ease-out"
+                  style={{ width: `${((currentSectionIndex + 1) / totalSections) * 100}%` }}
+                />
+              </div>
+              {/* Section dots */}
+              <div className="flex justify-center gap-2 mt-3">
+                {sortedSections!.map((_: any, idx: number) => (
                   <div
-                    key={section.id}
-                    className="opacity-0 animate-fadeInUp"
-                    style={{ animationDelay: `${sectionIndex * 100}ms`, animationFillMode: 'forwards' }}
-                  >
-                    {/* Section divider (skip for first section) */}
-                    {sectionIndex > 0 && (
-                      <div className="mb-6 mt-2 border-t border-warm-gray-200" />
-                    )}
+                    key={idx}
+                    className={`h-2 w-2 rounded-full transition-colors duration-300 ${
+                      idx === currentSectionIndex
+                        ? 'bg-blue-600'
+                        : idx < currentSectionIndex
+                        ? 'bg-blue-300'
+                        : 'bg-gray-300'
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
-                    {/* Section header */}
-                    {(section.title || section.description) && (
-                      <div className="mb-5">
-                        <h3 className="text-lg font-semibold text-warm-gray-900">{section.title}</h3>
-                        {section.description && (
-                          <p className="mt-1 text-sm text-warm-gray-600">{section.description}</p>
-                        )}
-                      </div>
-                    )}
+          {(() => {
+            if (hasSections) {
+              const section = sortedSections![currentSectionIndex];
+              const sectionFields = getFieldsForSection(currentSectionIndex);
+              if (sectionFields.length === 0) return null;
 
-                    {/* Section fields */}
-                    <div className="space-y-6">
-                      {sectionFields.map((field: any, fieldIndex: number) => (
-                        <div
-                          key={field.id}
-                          className="opacity-0 animate-fadeInUp"
-                          style={{ animationDelay: `${(sectionIndex * 100) + (fieldIndex * 50)}ms`, animationFillMode: 'forwards' }}
-                        >
-                          <FormField
-                            field={field}
-                            value={formData[field.id]}
-                            onChange={(value) => handleFieldChange(field.id, value)}
-                            error={errors[field.id]}
-                          />
-                        </div>
-                      ))}
+              return (
+                <div key={section.id} className="animate-fadeIn">
+                  {/* Section header */}
+                  {(section.title || section.description) && (
+                    <div className="mb-5">
+                      <h3 className="text-lg font-semibold text-warm-gray-900">{section.title}</h3>
+                      {section.description && (
+                        <p className="mt-1 text-sm text-warm-gray-600">{section.description}</p>
+                      )}
                     </div>
+                  )}
+
+                  {/* Section fields */}
+                  <div className="space-y-6">
+                    {sectionFields.map((field: any, fieldIndex: number) => (
+                      <div
+                        key={field.id}
+                        className="opacity-0 animate-fadeInUp"
+                        style={{ animationDelay: `${fieldIndex * 50}ms`, animationFillMode: 'forwards' }}
+                      >
+                        <FormField
+                          field={field}
+                          value={formData[field.id]}
+                          onChange={(value) => handleFieldChange(field.id, value)}
+                          error={errors[field.id]}
+                        />
+                      </div>
+                    ))}
                   </div>
-                );
-              });
+                </div>
+              );
             }
 
             // No sections — render flat (backwards compatible)
@@ -277,17 +351,55 @@ export default function FormPage() {
             ));
           })()}
 
+          {/* Navigation buttons */}
           <div className="flex justify-between pt-6">
-            <Button
-              variant="secondary"
-              onClick={() => router.push('/')}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" isLoading={isSubmitting}>
-              Submit
-            </Button>
+            {hasSections && totalSections > 1 ? (
+              <>
+                {currentSectionIndex > 0 ? (
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={handleBack}
+                    disabled={isSubmitting}
+                  >
+                    ← Back
+                  </Button>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    type="button"
+                    onClick={() => router.push('/')}
+                    disabled={isSubmitting}
+                  >
+                    Cancel
+                  </Button>
+                )}
+
+                {currentSectionIndex < totalSections - 1 ? (
+                  <Button type="button" onClick={handleNext}>
+                    Next →
+                  </Button>
+                ) : (
+                  <Button type="submit" isLoading={isSubmitting}>
+                    Submit
+                  </Button>
+                )}
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="secondary"
+                  type="button"
+                  onClick={() => router.push('/')}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" isLoading={isSubmitting}>
+                  Submit
+                </Button>
+              </>
+            )}
           </div>
         </form>
       </FormContainer>

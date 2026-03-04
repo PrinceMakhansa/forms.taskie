@@ -30,12 +30,17 @@ export default function FormHeader({
               className="w-full border-none bg-transparent text-2xl font-normal text-gray-900 placeholder-gray-400 focus:outline-none"
               style={{ fontFamily: "'Google Sans', 'Segoe UI', Roboto, sans-serif" }}
             />
-            <input
-              type="text"
+            <textarea
               value={formDescription}
-              onChange={(e) => setFormDescription(e.target.value)}
+              onChange={(e) => {
+                setFormDescription(e.target.value);
+                e.target.style.height = 'auto';
+                e.target.style.height = e.target.scrollHeight + 'px';
+              }}
+              ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
               placeholder="Form description"
-              className="mt-2 w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 focus:outline-none"
+              rows={1}
+              className="mt-2 w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
             />
           </div>
           <div className="flex items-center gap-2 flex-shrink-0">

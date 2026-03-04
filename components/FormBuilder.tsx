@@ -379,16 +379,19 @@ export default function FormBuilder({
                             "'Google Sans', 'Segoe UI', Roboto, sans-serif",
                         }}
                       />
-                      <input
-                        type="text"
+                      <textarea
                         value={section.description || ''}
-                        onChange={(e) =>
+                        onChange={(e) => {
                           updateSection(section.id, {
                             description: e.target.value,
-                          })
-                        }
-                        placeholder="Form description"
-                        className="mt-2 w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 focus:outline-none"
+                          });
+                          e.target.style.height = 'auto';
+                          e.target.style.height = e.target.scrollHeight + 'px';
+                        }}
+                        ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                        placeholder="Section description"
+                        rows={1}
+                        className="mt-2 w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
                       />
                     </div>
 

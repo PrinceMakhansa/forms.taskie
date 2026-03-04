@@ -121,12 +121,17 @@ export default function NewFormPage() {
                 placeholder="Untitled Form"
                 className="w-full border-none bg-transparent text-4xl font-bold text-warm-gray-900 placeholder-warm-gray-400 focus:outline-none"
               />
-              <input
-                type="text"
+              <textarea
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  e.target.style.height = 'auto';
+                  e.target.style.height = e.target.scrollHeight + 'px';
+                }}
+                ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
                 placeholder="Form description (optional)"
-                className="mt-3 w-full border-none bg-transparent text-warm-gray-600 placeholder-warm-gray-400 focus:outline-none"
+                rows={1}
+                className="mt-3 w-full border-none bg-transparent text-warm-gray-600 placeholder-warm-gray-400 focus:outline-none resize-none overflow-hidden"
               />
             </div>
 
