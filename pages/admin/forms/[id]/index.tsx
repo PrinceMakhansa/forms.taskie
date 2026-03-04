@@ -43,6 +43,10 @@ export default function FormDetailPage() {
     editorsError,
     setEditorsError,
     editorsSaving,
+    // Banner
+    banner,
+    setBanner,
+    bannerSaving,
     // Submissions
     submissions,
     submissionCount,
@@ -59,6 +63,7 @@ export default function FormDetailPage() {
     handlePrintResponse,
     handleAddEditor,
     handleRemoveEditor,
+    handleSaveBanner,
   } = useFormDetail();
 
   // ── Loading / Auth states ───────────────────────────────────────────────
@@ -162,6 +167,10 @@ export default function FormDetailPage() {
             form={form}
             formLink={formLink}
             linkCopied={linkCopied}
+            banner={banner}
+            setBanner={setBanner}
+            bannerSaving={bannerSaving}
+            handleSaveBanner={handleSaveBanner}
             editors={editors}
             newEditorId={newEditorId}
             setNewEditorId={setNewEditorId}

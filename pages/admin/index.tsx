@@ -20,7 +20,7 @@ export default function AdminDashboard() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const { data: forms, isLoading, error } = useSWR(
-    status === 'authenticated' ? '/api/forms' : null,
+    status === 'authenticated' ? '/api/forms?admin=true' : null,
     fetcher
   );
 
@@ -133,15 +133,28 @@ export default function AdminDashboard() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <p className="text-warm-gray-600 mb-1">
-            You haven&apos;t created any forms yet.
-          </p>
-          <p className="text-sm text-warm-gray-400 mb-6">
-            Get started by creating your first form.
-          </p>
-          <Link href="/admin/forms/new">
-            <Button>Create Your First Form</Button>
-          </Link>
+          {isAdmin ? (
+            <>
+              <p className="text-warm-gray-600 mb-1">
+                You haven&apos;t created any forms yet.
+              </p>
+              <p className="text-sm text-warm-gray-400 mb-6">
+                Get started by creating your first form.
+              </p>
+              <Link href="/admin/forms/new">
+                <Button>Create Your First Form</Button>
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-warm-gray-600 mb-1">
+                No forms available.
+              </p>
+              <p className="text-sm text-warm-gray-400">
+                You&apos;ll see forms here when an admin adds you as an editor.
+              </p>
+            </>
+          )}
         </div>
       )}
     </Layout>

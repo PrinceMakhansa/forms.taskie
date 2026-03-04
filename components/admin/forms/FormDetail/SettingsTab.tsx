@@ -6,6 +6,10 @@ interface SettingsTabProps {
   form: IForm;
   formLink: string;
   linkCopied: boolean;
+  banner: string;
+  setBanner: (banner: string) => void;
+  bannerSaving: boolean;
+  handleSaveBanner: () => void;
   editors: FormEditor[];
   newEditorId: string;
   setNewEditorId: (id: string) => void;
@@ -25,6 +29,10 @@ export default function SettingsTab({
   form,
   formLink,
   linkCopied,
+  banner,
+  setBanner,
+  bannerSaving,
+  handleSaveBanner,
   editors,
   newEditorId,
   setNewEditorId,
@@ -77,6 +85,47 @@ export default function SettingsTab({
             <div className="flex items-center justify-between text-sm">
               <span className="text-gray-500">Last modified</span>
               <span className="text-gray-900">{new Date(form.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Share */}
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden">
+        <div className="border-b border-gray-100 bg-gray-50 px-5 py-3">
+          <h3 className="text-sm font-medium text-gray-700">Banner Image</h3>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-xs text-gray-500">
+            Add a banner image URL to display at the top of your form.
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              value={banner}
+              onChange={(e) => setBanner(e.target.value)}
+              placeholder="https://example.com/banner.jpg"
+              className="flex-1 rounded-md border border-gray-200 px-3 py-2 text-sm placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleSaveBanner}
+              disabled={bannerSaving}
+              className="flex items-center gap-1.5 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {bannerSaving ? 'Saving...' : 'Save'}
+            </button>
+          </div>
+          {banner && (
+            <div className="mt-3">
+              <p className="text-xs text-gray-500 mb-2">Preview:</p>
+              <img
+                src={banner}
+                alt="Banner preview"
+                className="w-full h-32 object-cover rounded-lg border border-gray-200"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
+              />
             </div>
           )}
         </div>

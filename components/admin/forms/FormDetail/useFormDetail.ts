@@ -58,6 +58,10 @@ export function useFormDetail() {
   const [editorsError, setEditorsError] = useState<string | null>(null);
   const [editorsSaving, setEditorsSaving] = useState(false);
 
+  // Banner state
+  const [banner, setBanner] = useState('');
+  const [bannerSaving, setBannerSaving] = useState(false);
+
   // Submissions state
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [submissionCount, setSubmissionCount] = useState(0);
@@ -70,6 +74,7 @@ export function useFormDetail() {
     if (form) {
       setFormTitle(form.title);
       setFormDescription(form.description || '');
+      setBanner((form as any).banner || '');
       // Handle both old string format and new object format for backwards compatibility
       const rawEditors = (form as any).editors || [];
       const normalizedEditors: FormEditor[] = rawEditors.map((e: string | FormEditor) => 
@@ -296,6 +301,28 @@ export function useFormDetail() {
     }
   };
 
+  const handleSaveBanner = async () => {
+    setBannerSaving(true);
+    try {
+      const res = await fetch(`/api/forms/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ banner }),
+      });
+
+      if (res.ok) {
+        showToast('Banner saved');
+        await mutate();
+      } else {
+        showToast('Failed to save banner', 'error');
+      }
+    } catch {
+      showToast('An error occurred', 'error');
+    } finally {
+      setBannerSaving(false);
+    }
+  };
+
   return {
     // Router
     router,
@@ -333,6 +360,10 @@ export function useFormDetail() {
     editorsError,
     setEditorsError,
     editorsSaving,
+    // Banner
+    banner,
+    setBanner,
+    bannerSaving,
     // Submissions
     submissions,
     submissionCount,
@@ -349,5 +380,6 @@ export function useFormDetail() {
     handlePrintResponse,
     handleAddEditor,
     handleRemoveEditor,
+    handleSaveBanner,
   };
 }

@@ -19,19 +19,32 @@ export default async function handler(
 
       const userId = (session?.user as any)?.id;
       const admin = userId ? await isAdmin(userId) : false;
+      const adminMode = req.query.admin === 'true';
 
       let query;
-      if (admin) {
-        // Admins see all forms
+      if (admin && !adminMode) {
+        // Admins see all forms (when not in admin mode)
         query = {};
+      } else if (adminMode && userId) {
+        // Admin dashboard mode: only show forms user can edit
+        if (admin) {
+          query = {}; // Admins can edit all
+        } else {
+          // Editors only see forms they created or can edit
+          query = {
+            $or: [
+              { createdBy: userId },
+              { 'editors.discordId': userId },
+            ],
+          };
+        }
       } else if (userId) {
         // Authenticated users see published forms + forms they created + forms they can edit
         query = {
           $or: [
             { isPublished: true },
             { createdBy: userId },
-            { 'editors.discordId': userId }, // New object format
-            { editors: userId }, // Old string format for backwards compatibility
+            { 'editors.discordId': userId },
           ],
         };
       } else {

@@ -65,10 +65,15 @@ export default async function handler(
       }
 
       // Support partial updates (e.g. toggling isPublished)
-      const { isPublished, title, description, fields, sections, editors } = req.body;
+      const { isPublished, title, description, banner, fields, sections, editors } = req.body;
 
       if (typeof isPublished === 'boolean') {
         form.isPublished = isPublished;
+      }
+
+      // Update banner
+      if (banner !== undefined) {
+        (form as any).banner = banner || '';
       }
 
       // Only allow owner/admin to modify editors

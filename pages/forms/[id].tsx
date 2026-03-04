@@ -198,6 +198,7 @@ export default function FormPage() {
       <FormContainer
         title={form.title}
         description={form.description}
+        banner={form.banner}
       >
         <form onSubmit={handleSubmit} className="space-y-7">
           {errors.submit && (

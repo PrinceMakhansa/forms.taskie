@@ -9,6 +9,7 @@ export interface FormEditor {
 interface IForm extends Document {
   title: string;
   description?: string;
+  banner?: string; // Banner image URL
   fields: FormField[];
   sections?: FormSection[];
   createdBy: string;
@@ -53,6 +54,10 @@ const formSchema = new Schema<IForm>(
     description: {
       type: String,
       maxlength: 1000,
+    },
+    banner: {
+      type: String,
+      maxlength: 2000, // URL can be long
     },
     fields: {
       type: [fieldSchema],
