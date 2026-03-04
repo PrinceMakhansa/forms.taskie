@@ -4,7 +4,7 @@ import { Types } from 'mongoose';
 import connectToMongo from '@/lib/db';
 import Form from '@/models/Form';
 import Submission from '@/models/Submission';
-import { isAdmin } from '@/lib/auth';
+import { isAdmin, canEditForm } from '@/lib/auth';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
 
 export default async function handler(
@@ -33,7 +33,8 @@ export default async function handler(
       return res.status(404).json({ error: 'Form not found' });
     }
 
-    if (form.createdBy !== userId && !admin) {
+    // Check if user can edit this form (owner, editor, or admin)
+    if (!canEditForm(userId, form, admin)) {
       return res.status(403).json({ error: 'Forbidden' });
     }
 

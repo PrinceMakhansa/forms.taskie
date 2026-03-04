@@ -43,7 +43,8 @@ export default function FormDetailPage() {
   const router = useRouter();
   const { id } = router.query;
   const { data: session, status } = useSession();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [canAccessAdmin, setCanAccessAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [activeTab, setActiveTab] = useState<'questions' | 'responses' | 'settings'>('questions');
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
@@ -66,14 +67,15 @@ export default function FormDetailPage() {
         .then(res => res.json())
         .then(data => {
           setIsAdmin(data.isAdmin);
-          if (!data.isAdmin) router.push('/');
+          setCanAccessAdmin(data.canAccessAdmin || data.isAdmin);
+          if (!data.canAccessAdmin && !data.isAdmin) router.push('/');
         })
-        .catch(() => { setIsAdmin(false); router.push('/'); });
+        .catch(() => { setCanAccessAdmin(false); router.push('/'); });
     }
   }, [status, session, router]);
 
   const { data: form, isLoading, error, mutate } = useSWR<IForm>(
-    status === 'authenticated' && isAdmin && id && id !== 'new' ? `/api/forms/${id}` : null,
+    status === 'authenticated' && canAccessAdmin && id && id !== 'new' ? `/api/forms/${id}` : null,
     fetcher
   );
 
@@ -352,7 +354,7 @@ export default function FormDetailPage() {
   };
 
   // ── Loading / Auth states ───────────────────────────────────────────────
-  if (status === 'loading' || isAdmin === null) {
+  if (status === 'loading' || canAccessAdmin === null) {
     return (
       <Layout>
         <div className="flex justify-center py-20">
@@ -367,7 +369,7 @@ export default function FormDetailPage() {
     );
   }
 
-  if (status === 'unauthenticated' || !isAdmin || id === 'new') return null;
+  if (status === 'unauthenticated' || !canAccessAdmin || id === 'new') return null;
 
   if (isLoading || error || !form) {
     return (

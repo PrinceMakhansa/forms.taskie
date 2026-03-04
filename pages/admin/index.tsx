@@ -16,7 +16,8 @@ const fetcher = (url: string) => fetch(url).then((res) => {
 export default function AdminDashboard() {
   const router = useRouter();
   const { data: session, status } = useSession();
-  const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
+  const [canAccessAdmin, setCanAccessAdmin] = useState<boolean | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const { data: forms, isLoading, error } = useSWR(
     status === 'authenticated' ? '/api/forms' : null,
@@ -29,25 +30,26 @@ export default function AdminDashboard() {
     }
   }, [status]);
 
-  // Check admin status
+  // Check admin/editor access
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       fetch('/api/auth/check-admin')
         .then(res => res.json())
         .then(data => {
           setIsAdmin(data.isAdmin);
-          if (!data.isAdmin) {
+          setCanAccessAdmin(data.canAccessAdmin || data.isAdmin);
+          if (!data.canAccessAdmin && !data.isAdmin) {
             router.push('/');
           }
         })
         .catch(() => {
-          setIsAdmin(false);
+          setCanAccessAdmin(false);
           router.push('/');
         });
     }
   }, [status, session, router]);
 
-  if (status === 'loading' || isAdmin === null) {
+  if (status === 'loading' || canAccessAdmin === null) {
     return (
       <Layout>
         <div className="flex justify-center">
@@ -72,9 +74,11 @@ export default function AdminDashboard() {
         <h2 className="text-2xl font-bold text-warm-gray-900">
           My Forms
         </h2>
-        <Link href="/admin/forms/new">
-          <Button>Create New Form</Button>
-        </Link>
+        {isAdmin && (
+          <Link href="/admin/forms/new">
+            <Button>Create New Form</Button>
+          </Link>
+        )}
       </div>
 
       {isLoading ? (
