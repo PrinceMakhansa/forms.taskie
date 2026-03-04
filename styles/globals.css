@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  @apply box-border;
+}
+
+html,
+body {
+  background-color: #eef2ff;
+  @apply text-gray-900;
+  font-family: 'Satoshi';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@font-face {
+  font-family: 'Satoshi';
+  src: url('/fonts/Satoshi-Regular.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+input,
+textarea,
+select {
+  @apply focus:outline-none;
+}
+
+@layer components {
+  .taskie-btn {
+    background-color: #2563eb;
+    color: white;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    letter-spacing: 0.01em;
+  }
+  .taskie-btn:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    transform: none;
+  }
+  .taskie-btn:active {
+    background-color: #1e40af;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    transform: none;
+  }
+  .taskie-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+/* Animation Keyframes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
