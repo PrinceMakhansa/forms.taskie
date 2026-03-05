@@ -23,19 +23,19 @@ export default function HomePage() {
     <Layout>
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="w-full max-w-4xl px-6 py-16 text-center">
-          <div className="mx-auto max-w-2xl rounded-2xl bg-white/20 backdrop-blur-xl border border-white/40 px-8 py-12 shadow-[0_8px_32px_rgba(0,0,0,0.1)]">
-            <p className="mb-2 text-sm font-semibold uppercase text-white/90">Powered by</p>
-            <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-white" style={{ fontFamily: "'Stardom', sans-serif" }}>
+          <div className="mx-auto max-w-2xl rounded-2xl bg-white border-2 border-blue-200 px-8 py-12 shadow-md">
+            <p className="mb-2 text-sm font-semibold uppercase text-blue-600">Powered by</p>
+            <h1 className="mb-4 text-4xl font-extrabold tracking-tight text-blue-700" style={{ fontFamily: "'Stardom', sans-serif" }}>
               <BlurText
                 text="Taskie"
                 animateBy="letters"
                 direction="top"
                 delay={80}
                 stepDuration={0.4}
-                className="text-4xl font-extrabold tracking-tight text-[#0c3787]"
+                className="text-4xl font-extrabold tracking-tight text-blue-700"
               />
             </h1>
-            <p className="mx-auto max-w-xl text-base text-white/90">Build and manage forms quickly.</p>
+            <p className="mx-auto max-w-xl text-base text-blue-600/90">Build and manage forms quickly.</p>
 
             <div className="mt-8 flex justify-center">
               {status === 'loading' || (status === 'authenticated' && canAccessAdmin === null) ? (
