@@ -8,8 +8,8 @@
 
 html,
 body {
-  background-color: #eef2ff;
   @apply text-gray-900;
+  background-color: transparent;
   font-family: 'Satoshi';
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -39,26 +39,29 @@ select {
 
 @layer components {
   .taskie-btn {
-    background-color: #2563eb;
-    color: white;
+    background-color: #eff6ff;
+    color: #1e3a8a;
     border-radius: 4px;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
     letter-spacing: 0.01em;
   }
+
   .taskie-btn:hover {
-    background-color: #1d4ed8;
-    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.35);
+    background-color: #dbeafe;
+    box-shadow: 0 2px 6px rgba(219, 234, 254, 0.35);
     transform: none;
   }
+
   .taskie-btn:active {
-    background-color: #1e40af;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.12);
+    background-color: #bfdbfe;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
     transform: none;
   }
+
   .taskie-btn:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -73,6 +76,7 @@ select {
     opacity: 0;
     transform: translateY(16px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -83,6 +87,7 @@ select {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -93,6 +98,7 @@ select {
     opacity: 0;
     transform: scale(0.85);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
