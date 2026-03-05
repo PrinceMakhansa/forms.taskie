@@ -32,14 +32,25 @@ export default async function handler(
         return res.status(404).json({ error: 'Form not found' });
       }
 
+      // Lazy auto-unpublish check: if the timer expired, immediately unpublish it
+      if ((form as any).isPublished && (form as any).closesAt && new Date((form as any).closesAt) <= new Date()) {
+        await Form.updateOne(
+          { _id: form._id },
+          { $set: { isPublished: false, closesAt: null } }
+        );
+        (form as any).isPublished = false;
+        (form as any).closesAt = null;
+      }
+
       // Allow access if published, creator, editor, or admin
       const userId = (session?.user as any)?.id;
       const admin = userId ? await isAdmin(userId) : false;
-      const hasAccess = (form as any).isPublished || canEditForm(userId, form as any, admin);
+      const isEditor = canEditForm(userId, form as any, admin);
+      const hasAccess = (form as any).isPublished || isEditor;
 
       if (!hasAccess) {
         // Return specific error code for unpublished forms
-        return res.status(403).json({ 
+        return res.status(403).json({
           error: 'Form not available',
           code: 'FORM_UNPUBLISHED',
           message: 'This form is not currently accepting responses.'
@@ -71,10 +82,15 @@ export default async function handler(
       }
 
       // Support partial updates (e.g. toggling isPublished)
-      const { isPublished, title, description, banner, fields, sections, editors } = req.body;
+      const { isPublished, title, description, banner, fields, sections, editors, closesAt } = req.body;
 
       if (typeof isPublished === 'boolean') {
         form.isPublished = isPublished;
+      }
+
+      // Update closesAt (accept date string or null to clear)
+      if (closesAt !== undefined) {
+        (form as any).closesAt = closesAt ? new Date(closesAt) : null;
       }
 
       // Update banner

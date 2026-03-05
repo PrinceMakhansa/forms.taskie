@@ -47,6 +47,10 @@ export default function FormDetailPage() {
     banner,
     setBanner,
     bannerSaving,
+    // Closing time
+    closesAt,
+    setClosesAt,
+    closesAtSaving,
     // Submissions
     submissions,
     submissionCount,
@@ -64,6 +68,7 @@ export default function FormDetailPage() {
     handleAddEditor,
     handleRemoveEditor,
     handleSaveBanner,
+    handleUpdateClosesAt,
   } = useFormDetail();
 
   // ── Loading / Auth states ───────────────────────────────────────────────
@@ -171,6 +176,9 @@ export default function FormDetailPage() {
             setBanner={setBanner}
             bannerSaving={bannerSaving}
             handleSaveBanner={handleSaveBanner}
+            closesAt={closesAt}
+            setClosesAt={setClosesAt}
+            closesAtSaving={closesAtSaving}
             editors={editors}
             newEditorId={newEditorId}
             setNewEditorId={setNewEditorId}
@@ -180,6 +188,7 @@ export default function FormDetailPage() {
             setEditorsError={setEditorsError}
             editorsSaving={editorsSaving}
             handleTogglePublish={handleTogglePublish}
+            handleUpdateClosesAt={handleUpdateClosesAt}
             handleCopyLink={handleCopyLink}
             handleAddEditor={handleAddEditor}
             handleRemoveEditor={handleRemoveEditor}

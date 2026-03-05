@@ -52,9 +52,23 @@ export default async function handler(
         query = { isPublished: true };
       }
 
-      const forms = await Form.find(query)
+      let forms = await Form.find(query)
         .sort({ createdAt: -1 })
         .select('-fields'); // Don't send full field details in list
+
+      // Lazy auto-unpublish check for listed forms
+      const now = new Date();
+      forms = await Promise.all(forms.map(async (form) => {
+        if ((form as any).isPublished && (form as any).closesAt && new Date((form as any).closesAt) <= now) {
+          await Form.updateOne(
+            { _id: form._id },
+            { $set: { isPublished: false, closesAt: null } }
+          );
+          form.isPublished = false;
+          (form as any).closesAt = null;
+        }
+        return form;
+      }));
 
       return res.status(200).json(forms);
     }

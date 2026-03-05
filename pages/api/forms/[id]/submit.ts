@@ -46,6 +46,16 @@ export default async function handler(
       return res.status(404).json({ error: 'Form not found' });
     }
 
+    // Lazy auto-unpublish check on submit
+    if ((form as any).isPublished && (form as any).closesAt && new Date((form as any).closesAt) <= new Date()) {
+      await Form.updateOne(
+        { _id: form._id },
+        { $set: { isPublished: false, closesAt: null } }
+      );
+      (form as any).isPublished = false;
+      (form as any).closesAt = null;
+    }
+
     if (!form.isPublished) {
       return res.status(403).json({ error: 'Form is not published' });
     }

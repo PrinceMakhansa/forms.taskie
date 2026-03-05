@@ -62,6 +62,10 @@ export function useFormDetail() {
   const [banner, setBanner] = useState('');
   const [bannerSaving, setBannerSaving] = useState(false);
 
+  // Closing time state
+  const [closesAt, setClosesAt] = useState<string>('');
+  const [closesAtSaving, setClosesAtSaving] = useState(false);
+
   // Submissions state
   const [submissions, setSubmissions] = useState<any[]>([]);
   const [submissionCount, setSubmissionCount] = useState(0);
@@ -75,9 +79,18 @@ export function useFormDetail() {
       setFormTitle(form.title);
       setFormDescription(form.description || '');
       setBanner((form as any).banner || '');
+      // Initialize closesAt
+      if ((form as any).closesAt) {
+        // Format to datetime-local input value (YYYY-MM-DDTHH:mm)
+        const d = new Date((form as any).closesAt);
+        const pad = (n: number) => n.toString().padStart(2, '0');
+        setClosesAt(`${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`);
+      } else {
+        setClosesAt('');
+      }
       // Handle both old string format and new object format for backwards compatibility
       const rawEditors = (form as any).editors || [];
-      const normalizedEditors: FormEditor[] = rawEditors.map((e: string | FormEditor) => 
+      const normalizedEditors: FormEditor[] = rawEditors.map((e: string | FormEditor) =>
         typeof e === 'string' ? { discordId: e } : e
       );
       setEditors(normalizedEditors);
@@ -144,19 +157,55 @@ export function useFormDetail() {
     }
   };
 
-  const handleTogglePublish = async () => {
+  const handleTogglePublish = async (newClosesAt?: string | null) => {
     try {
+      const willPublish = !form?.isPublished;
+
+      // Convert local datetime-local string to Date object so it stringifies to UTC ISO
+      let closesAtValue: Date | null = null;
+      if (newClosesAt) {
+        closesAtValue = new Date(newClosesAt);
+      }
+
       const res = await fetch(`/api/forms/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isPublished: !form?.isPublished }),
+        body: JSON.stringify({
+          isPublished: willPublish,
+          ...(willPublish && newClosesAt !== undefined && { closesAt: closesAtValue })
+        }),
       });
       if (res.ok) {
         await mutate();
-        showToast(form?.isPublished ? 'Form unpublished' : 'Form published successfully');
+        showToast(willPublish ? 'Form published successfully' : 'Form unpublished');
       }
     } catch {
       showToast('Failed to update status', 'error');
+    }
+  };
+
+  const handleUpdateClosesAt = async (newClosesAt: string | null) => {
+    setClosesAtSaving(true);
+    try {
+      // Convert to Date object for proper UTC transfer
+      const closesAtValue = newClosesAt ? new Date(newClosesAt) : null;
+
+      const res = await fetch(`/api/forms/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ closesAt: closesAtValue }),
+      });
+
+      if (res.ok) {
+        showToast(newClosesAt ? 'Closing time updated' : 'Closing time removed');
+        await mutate();
+      } else {
+        showToast('Failed to update closing time', 'error');
+      }
+    } catch {
+      showToast('An error occurred', 'error');
+    } finally {
+      setClosesAtSaving(false);
     }
   };
 
@@ -249,7 +298,7 @@ export function useFormDetail() {
 
     setEditorsSaving(true);
     try {
-      const newEditor: FormEditor = { 
+      const newEditor: FormEditor = {
         discordId: trimmedId,
         ...(trimmedUsername && { username: trimmedUsername })
       };
@@ -323,6 +372,8 @@ export function useFormDetail() {
     }
   };
 
+
+
   return {
     // Router
     router,
@@ -364,6 +415,10 @@ export function useFormDetail() {
     banner,
     setBanner,
     bannerSaving,
+    // Closing time
+    closesAt,
+    setClosesAt,
+    closesAtSaving,
     // Submissions
     submissions,
     submissionCount,
@@ -381,5 +436,6 @@ export function useFormDetail() {
     handleAddEditor,
     handleRemoveEditor,
     handleSaveBanner,
+    handleUpdateClosesAt,
   };
 }

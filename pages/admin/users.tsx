@@ -186,30 +186,20 @@ export default function AdminUsersPage() {
         </form>
       </div>
 
-      {/* Environment Admins */}
-      {data?.envAdmins && data.envAdmins.length > 0 && (
-        <div className="mb-8 rounded-xl border border-amber-200 bg-amber-50 p-6 animate-fadeIn">
-          <h2 className="text-lg font-bold text-warm-gray-900 mb-2">Developers</h2>
-          <div className="space-y-2">
-            {data.envAdmins.map((id) => (
-              <div key={id} className="flex items-center justify-between rounded-lg bg-white/60 px-4 py-2">
-                <div>
-                  <span className="font-mono text-sm text-warm-gray-900">{id}</span>
-                  {id === currentUserId && (
-                    <span className="ml-2 text-xs text-blue-600">(You)</span>
-                  )}
-                </div>
-                <span className="text-xs text-amber-600 font-medium">ENV</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Database Admins */}
       <div className="rounded-xl border border-warm-gray-200 bg-white p-6 shadow-soft animate-fadeIn">
         <h2 className="text-lg font-bold text-warm-gray-900 mb-4">Admins</h2>
-        
+
+        {/* Developer */}
+        <div className="mb-4 flex items-center justify-between rounded-lg border border-blue-100 bg-blue-50/50 px-4 py-3">
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-semibold text-warm-gray-900">Prince</span>
+              <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Developer</span>
+            </div>
+            <p className="mt-0.5 font-mono text-xs text-warm-gray-400">1039359961530122391</p>
+          </div>
+        </div>
+
         {data?.admins && data.admins.length > 0 ? (
           <div className="space-y-3">
             {data.admins.map((admin, index) => (
@@ -235,11 +225,10 @@ export default function AdminUsersPage() {
                 <button
                   onClick={() => handleRemoveAdmin(admin._id, admin.discordId)}
                   disabled={admin.discordId === currentUserId}
-                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${
-                    admin.discordId === currentUserId
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-red-50 text-red-600 hover:bg-red-100'
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 text-sm font-medium transition-colors ${admin.discordId === currentUserId
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-50 text-red-600 hover:bg-red-100'
+                    }`}
                 >
                   Remove
                 </button>
@@ -257,6 +246,11 @@ export default function AdminUsersPage() {
             <p className="text-sm text-warm-gray-400">Add admins using the form above.</p>
           </div>
         )}
+      </div>
+
+      {/* Developed By */}
+      <div className="mt-8 rounded-xl border border-blue-200 bg-blue-50 p-6 animate-fadeIn">
+        <p className="text-sm font-medium text-blue-700 text-center">Designed & Developed by <span className="font-bold">Prince</span></p>
       </div>
     </Layout>
   );

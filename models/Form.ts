@@ -21,6 +21,7 @@ interface IForm extends Document {
   createdAt: Date;
   updatedAt: Date;
   isPublished: boolean;
+  closesAt?: Date | null; // Auto-close date/time
 }
 
 // Define sub-schemas separately to avoid 'type' keyword conflicts
@@ -96,6 +97,10 @@ const formSchema = new Schema<IForm>(
       type: Boolean,
       default: false,
     },
+    closesAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
@@ -103,7 +108,6 @@ const formSchema = new Schema<IForm>(
 );
 
 // Index for common queries
-formSchema.index({ publicId: 1 }, { unique: true });
 formSchema.index({ createdBy: 1, createdAt: -1 });
 formSchema.index({ isPublished: 1 });
 

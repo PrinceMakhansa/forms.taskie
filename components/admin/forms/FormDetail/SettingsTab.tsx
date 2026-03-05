@@ -10,6 +10,9 @@ interface SettingsTabProps {
   setBanner: (banner: string) => void;
   bannerSaving: boolean;
   handleSaveBanner: () => void;
+  closesAt: string;
+  setClosesAt: (value: string) => void;
+  closesAtSaving: boolean;
   editors: FormEditor[];
   newEditorId: string;
   setNewEditorId: (id: string) => void;
@@ -18,7 +21,8 @@ interface SettingsTabProps {
   editorsError: string | null;
   setEditorsError: (error: string | null) => void;
   editorsSaving: boolean;
-  handleTogglePublish: () => void;
+  handleTogglePublish: (newClosesAt?: string | null) => void;
+  handleUpdateClosesAt: (newClosesAt: string | null) => void;
   handleCopyLink: () => void;
   handleAddEditor: () => void;
   handleRemoveEditor: (discordId: string) => void;
@@ -33,6 +37,9 @@ export default function SettingsTab({
   setBanner,
   bannerSaving,
   handleSaveBanner,
+  closesAt,
+  setClosesAt,
+  closesAtSaving,
   editors,
   newEditorId,
   setNewEditorId,
@@ -42,11 +49,13 @@ export default function SettingsTab({
   setEditorsError,
   editorsSaving,
   handleTogglePublish,
+  handleUpdateClosesAt,
   handleCopyLink,
   handleAddEditor,
   handleRemoveEditor,
   handleDeleteForm,
 }: SettingsTabProps) {
+  const [showOptions, setShowOptions] = React.useState(false);
   return (
     <div className="mx-auto max-w-2xl space-y-5">
       {/* Publish Settings */}
@@ -64,27 +73,85 @@ export default function SettingsTab({
                   : 'Your form is not visible to others.'}
               </p>
             </div>
-            <button
-              onClick={handleTogglePublish}
-              className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${
-                form.isPublished ? 'bg-blue-600' : 'bg-gray-300'
-              }`}
-            >
-              <span className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${
-                form.isPublished ? 'translate-x-5' : 'translate-x-0'
-              }`} />
-            </button>
+            <div className="flex gap-2">
+              {form.isPublished ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleTogglePublish()}
+                >
+                  Unpublish
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={() => setShowOptions(!showOptions)}
+                  variant={showOptions ? 'secondary' : 'primary'}
+                >
+                  {showOptions ? 'Cancel' : 'Publish'}
+                </Button>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Created</span>
-            <span className="text-gray-900">{new Date(form.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-          </div>
+          {!form.isPublished && showOptions && (
+            <div className="mt-4 rounded-lg bg-blue-50/50 border border-blue-100 p-4 space-y-3 animate-fadeIn">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-blue-700 uppercase tracking-wider">
+                  Closing Time (Optional)
+                </label>
+                <p className="text-[11px] text-blue-600/70">
+                  Set a date and time for this form to automatically stop accepting responses.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <input
+                  type="datetime-local"
+                  value={closesAt}
+                  onChange={(e) => setClosesAt(e.target.value)}
+                  className="flex-1 rounded-md border border-blue-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div className="flex justify-end gap-2 pt-1">
+                <Button
+                  size="sm"
+                  className="w-full"
+                  onClick={() => {
+                    handleTogglePublish(closesAt);
+                    setShowOptions(false);
+                  }}
+                >
+                  Go Live
+                </Button>
+              </div>
+            </div>
+          )}
 
-          {form.updatedAt && (
-            <div className="flex items-center justify-between text-sm">
-              <span className="text-gray-500">Last modified</span>
-              <span className="text-gray-900">{new Date(form.updatedAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+          {form.isPublished && form.closesAt && (
+            <div className="flex items-center justify-between rounded-md bg-blue-50 border border-blue-100 px-3 py-2">
+              <div className="flex items-center gap-2">
+                <svg className="h-4 w-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                {(() => {
+                  const closingDate = new Date(form.closesAt);
+                  const now = new Date();
+                  const isClosed = closingDate <= now;
+                  return (
+                    <span className={`text-xs font-medium ${isClosed ? 'text-red-600' : 'text-blue-600'}`}>
+                      {isClosed
+                        ? `Closed on ${closingDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`
+                        : `Closes on ${closingDate.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}`}
+                    </span>
+                  );
+                })()}
+              </div>
+              <button
+                onClick={() => { setClosesAt(''); handleUpdateClosesAt(null); }}
+                className="text-xs text-blue-400 hover:text-red-500 transition-colors"
+              >
+                Clear
+              </button>
             </div>
           )}
         </div>
@@ -150,11 +217,10 @@ export default function SettingsTab({
                   />
                   <button
                     onClick={handleCopyLink}
-                    className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-all ${
-                      linkCopied
-                        ? 'border-blue-300 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
-                    }`}
+                    className={`flex items-center gap-1.5 rounded-md border px-3 py-2 text-xs font-medium transition-all ${linkCopied
+                      ? 'border-blue-300 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 bg-white text-gray-600 hover:bg-gray-50'
+                      }`}
                   >
                     {linkCopied ? (
                       <>
@@ -204,7 +270,7 @@ export default function SettingsTab({
         </div>
         <div className="p-5 space-y-4">
           <p className="text-xs text-gray-500">
-            Add Discord user IDs to allow others to edit this form. 
+            Add Discord user IDs to allow others to edit this form.
           </p>
 
           {/* Add editor input */}
