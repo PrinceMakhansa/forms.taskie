@@ -77,8 +77,14 @@ export default function Layout({ children, title, isAdmin, hideNav }: LayoutProp
 
       {/* Footer */}
       <footer className="mt-8 border-t border-blue-100/40 py-4">
-        <div className="mx-auto max-w-7xl px-4 text-center text-sm text-blue-400/70 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl px-4 text-center text-sm text-blue-400/80 sm:px-6 lg:px-8">
           Taskie Forms — Create and manage forms with ease
+        </div>
+        <div className="mx-auto max-w-7xl px-4 text-center text-xs text-blue-400/60 sm:px-6 lg:px-8">
+          Copyright © {new Date().getFullYear()} Taskie. All rights reserved.
+        </div>
+        <div className="mx-auto max-w-7xl px-4 text-center text-xs text-blue-400/60 sm:px-6 lg:px-8">
+          Design & Developed by <Link href="https://pr1nce.tech" className="text-blue-500 hover:text-blue-700 font-medium cursor-pointer">Prince</Link>
         </div>
       </footer>
     </div>
