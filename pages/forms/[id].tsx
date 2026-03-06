@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { useSession, signIn } from 'next-auth/react';
 import Layout from '@/components/Layout';
@@ -7,7 +8,14 @@ import FormField from '@/components/FormField';
 import Button from '@/components/Button';
 import { IForm } from '@/models/Form';
 
-export default function FormPage() {
+interface OGData {
+  title: string;
+  description: string | null;
+  image: string | null;
+  url: string;
+}
+
+export default function FormPage({ ogData }: { ogData: OGData | null }) {
   const router = useRouter();
   const { id } = router.query;
   const { data: session, status } = useSession();
@@ -109,10 +117,14 @@ export default function FormPage() {
     }
   };
 
+  const formMeta = ogData
+    ? { title: ogData.title, description: ogData.description ?? undefined, image: ogData.image ?? undefined, url: ogData.url }
+    : undefined;
+
   // Show loading while checking auth status
   if (status === 'loading') {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <div className="flex justify-center">
           <div className="animate-spin">
             <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
@@ -128,7 +140,7 @@ export default function FormPage() {
   // Show login prompt for unauthenticated users
   if (status === 'unauthenticated') {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <div className="mx-auto max-w-lg animate-fadeIn py-12">
           <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
             {/* Blue top bar */}
@@ -189,7 +201,7 @@ export default function FormPage() {
 
   if (isLoading) {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <div className="flex justify-center">
           <div className="animate-spin">
             <svg className="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
@@ -204,7 +216,7 @@ export default function FormPage() {
 
   if (formUnavailable) {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <div className="mx-auto max-w-md text-center py-16">
           <h2 className="text-2xl font-bold text-warm-gray-900 mb-3">
             Form Not Available
@@ -224,7 +236,7 @@ export default function FormPage() {
 
   if (!form) {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <div className="text-center">
           <h2 className="text-2xl font-bold text-warm-gray-900">
             Form not found
@@ -239,7 +251,7 @@ export default function FormPage() {
 
   if (submitted) {
     return (
-      <Layout hideNav>
+      <Layout hideNav meta={formMeta}>
         <FormContainer title="Thank You">
           <div className="text-center">
             <div className="mb-6 animate-scaleIn text-5xl text-blue-600">✓</div>
@@ -304,7 +316,7 @@ export default function FormPage() {
   };
 
   return (
-    <Layout hideNav>
+    <Layout hideNav meta={formMeta}>
       {/* User identity strip */}
       {session?.user && (
         <div className="mx-auto max-w-2xl mb-3 animate-fadeIn">
@@ -485,3 +497,37 @@ export default function FormPage() {
     </Layout>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const { id } = context.params as { id: string };
+  const baseUrl = process.env.NEXTAUTH_URL ?? '';
+
+  try {
+    const connectToMongo = (await import('@/lib/db')).default;
+    const Form = (await import('@/models/Form')).default;
+    const { Types } = await import('mongoose');
+
+    await connectToMongo();
+
+    const query = Types.ObjectId.isValid(id)
+      ? { $or: [{ publicId: id }, { _id: id }] }
+      : { publicId: id };
+
+    const form = await Form.findOne(query).lean() as any;
+
+    if (!form) {
+      return { props: { ogData: null } };
+    }
+
+    const ogData: OGData = {
+      title: form.title,
+      description: form.description ?? null,
+      image: form.banner ?? null,
+      url: `${baseUrl}/forms/${form.publicId}`,
+    };
+
+    return { props: { ogData } };
+  } catch {
+    return { props: { ogData: null } };
+  }
+};

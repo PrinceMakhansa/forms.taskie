@@ -1,19 +1,52 @@
 import React, { ReactNode } from 'react';
+import Head from 'next/head';
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
+
+interface OGMeta {
+  title?: string;
+  description?: string;
+  image?: string;
+  url?: string;
+  type?: string;
+}
 
 interface LayoutProps {
   children: ReactNode;
   title?: string;
   isAdmin?: boolean;
   hideNav?: boolean;
+  meta?: OGMeta;
 }
 
-export default function Layout({ children, title, isAdmin, hideNav }: LayoutProps) {
+export default function Layout({ children, title, isAdmin, hideNav, meta }: LayoutProps) {
   const { data: session } = useSession();
+
+  const siteTitle = meta?.title ?? 'Taskie Forms';
+  const siteDescription = meta?.description ?? 'Build and manage forms quickly.';
+  const siteImage = meta?.image ?? '/og-image.png';
+  const siteType = meta?.type ?? 'website';
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#E8F9FF' }}>
+      <Head>
+        <title>{siteTitle}</title>
+        <meta name="description" content={siteDescription} />
+
+        {/* Open Graph */}
+        <meta property="og:type" content={siteType} />
+        <meta property="og:title" content={siteTitle} />
+        <meta property="og:description" content={siteDescription} />
+        <meta property="og:image" content={siteImage} />
+        {meta?.url && <meta property="og:url" content={meta.url} />}
+        <meta property="og:site_name" content="Taskie Forms" />
+
+        {/* Twitter / Discord summary card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={siteTitle} />
+        <meta name="twitter:description" content={siteDescription} />
+        <meta name="twitter:image" content={siteImage} />
+      </Head>
       {/* Navigation - glassmorphism floating bar */}
       {!hideNav && (
         <nav className="sticky top-4 z-50">

@@ -20,7 +20,10 @@ export default function HomePage() {
   }, [status]);
 
   return (
-    <Layout>
+    <Layout meta={{
+      title: 'Forms by Taskie',
+      description: 'Build and manage forms quickly. Powered by Taskie.',
+    }}>
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="w-full max-w-4xl px-6 py-16 text-center">
           <div className="mx-auto max-w-2xl rounded-2xl bg-white border-2 border-blue-200 px-8 py-12 shadow-md">
