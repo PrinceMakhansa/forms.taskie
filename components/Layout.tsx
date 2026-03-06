@@ -84,7 +84,7 @@ export default function Layout({ children, title, isAdmin, hideNav }: LayoutProp
           Copyright © {new Date().getFullYear()} Taskie. All rights reserved.
         </div>
         <div className="mx-auto max-w-7xl px-4 text-center text-xs text-blue-400/60 sm:px-6 lg:px-8">
-          Design & Developed by <Link href="https://pr1nce.tech" className="text-blue-500 hover:text-blue-700 font-medium cursor-pointer">Prince</Link>
+          Design & Developed by <span className="text-blue-500 hover:text-blue-700 font-medium cursor-pointer">Prince</span>
         </div>
       </footer>
     </div>
