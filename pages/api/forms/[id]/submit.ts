@@ -60,6 +60,23 @@ export default async function handler(
       return res.status(403).json({ error: 'Form is not published' });
     }
 
+    // Hoist user once — used for duplicate check and submittedBy
+    const user = session?.user as any;
+
+    // Prevent duplicate submissions from the same Discord user
+    if (user?.id) {
+      const existing = await Submission.exists({
+        formId: form._id,
+        'submittedBy.discordId': user.id,
+      });
+      if (existing) {
+        return res.status(409).json({
+          error: 'You have already submitted this form.',
+          code: 'ALREADY_SUBMITTED',
+        });
+      }
+    }
+
     // Validate submission data against form fields
     const validationErrors: Record<string, string> = {};
 
@@ -102,7 +119,6 @@ export default async function handler(
     }
 
     // Build submittedBy info from session if available
-    const user = session?.user as any;
     const submittedBy = user?.id ? {
       discordId: user.id,
       username: user.username || user.name || 'Unknown',

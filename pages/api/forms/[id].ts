@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { Types } from 'mongoose';
 import connectToMongo from '@/lib/db';
 import Form from '@/models/Form';
+import Submission from '@/models/Submission';
 import { FormSchema } from '@/lib/validation';
 import { isAdmin, canEditForm } from '@/lib/auth';
 import { authOptions } from '@/pages/api/auth/[...nextauth]';
@@ -57,7 +58,17 @@ export default async function handler(
         });
       }
 
-      return res.status(200).json(form);
+      // Check if the logged-in user already submitted this form
+      let hasSubmitted = false;
+      if (userId) {
+        const existing = await Submission.exists({
+          formId: (form as any)._id,
+          'submittedBy.discordId': userId,
+        });
+        hasSubmitted = !!existing;
+      }
+
+      return res.status(200).json({ ...form, hasSubmitted });
     }
 
     if (req.method === 'PUT') {

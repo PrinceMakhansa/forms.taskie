@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GetServerSideProps } from 'next';
 import { useRouter } from 'next/router';
 import { useSession, signIn } from 'next-auth/react';
@@ -27,12 +27,19 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [formUnavailable, setFormUnavailable] = useState(false);
+  const [alreadySubmitted, setAlreadySubmitted] = useState(false);
   const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
-
-
+  const [draftRestored, setDraftRestored] = useState(false);
+  // Guard so the form is only fetched once per id. Without this, NextAuth's
+  // periodic session re-validation causes status to flip, re-running the
+  // effect and wiping formData — making the Next button appear stuck.
+  const formFetchedRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!id || status === 'loading') return;
+    // Only fetch if we haven't already fetched this id
+    if (formFetchedRef.current === id) return;
+    formFetchedRef.current = id as string;
 
     const fetchForm = async () => {
       try {
@@ -55,16 +62,35 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
           return;
         }
 
+        if (data.hasSubmitted) {
+          setAlreadySubmitted(true);
+          setIsLoading(false);
+          return;
+        }
+
         setForm(data);
 
-        // Initialize form data
+        // Initialize form data, restoring any saved draft
         const initialData: Record<string, any> = {};
         (data.fields ?? []).forEach((field: any) => {
           initialData[field.id] = field.type === 'checkbox' ? false : '';
         });
+        try {
+          const saved = localStorage.getItem(`form-draft-${id}`);
+          if (saved) {
+            const parsed = JSON.parse(saved);
+            // Only restore keys that exist in this form
+            Object.keys(initialData).forEach((key) => {
+              if (parsed[key] !== undefined) initialData[key] = parsed[key];
+            });
+            setDraftRestored(true);
+          }
+        } catch { /* ignore localStorage errors */ }
         setFormData(initialData);
       } catch (error) {
         console.error('Error fetching form:', error);
+        // Reset the guard so a manual retry can work
+        formFetchedRef.current = null;
       } finally {
         setIsLoading(false);
       }
@@ -74,7 +100,11 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
   }, [id, status]);
 
   const handleFieldChange = (fieldId: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [fieldId]: value };
+      try { localStorage.setItem(`form-draft-${id}`, JSON.stringify(next)); } catch { /* ignore */ }
+      return next;
+    });
     // Clear error for this field
     setErrors((prev) => {
       const newErrors = { ...prev };
@@ -98,6 +128,7 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
       });
 
       if (res.ok) {
+        try { localStorage.removeItem(`form-draft-${id}`); } catch { /* ignore */ }
         setSubmitted(true);
       } else {
         const errorData = await res.json();
@@ -232,6 +263,32 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
     );
   }
 
+  if (alreadySubmitted) {
+    return (
+      <Layout hideNav meta={formMeta}>
+        <div className="mx-auto max-w-md animate-fadeIn py-12">
+          <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm">
+            <div className="h-[10px] w-full bg-green-500 rounded-t-lg" />
+            <div className="p-8 sm:p-10 text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full bg-green-50">
+                <svg className="h-8 w-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Already Submitted</h2>
+              <p className="text-sm text-gray-500 mb-6">
+                You have already submitted a response to <span className="font-medium text-gray-700">{ogData?.title ?? 'this form'}</span>. Only one submission per person is allowed.
+              </p>
+              <p className="text-xs text-gray-400">
+                If you believe this is a mistake or need to update your response, please contact the form administrator.
+              </p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
 
 
   if (!form) {
@@ -344,6 +401,26 @@ export default function FormPage({ ogData }: { ogData: OGData | null }) {
         banner={form.banner}
       >
         <form onSubmit={handleSubmit} className="space-y-7">
+          {draftRestored && (
+            <div className="flex items-center justify-between rounded-lg bg-blue-50 border border-blue-200 px-4 py-3">
+              <p className="text-sm text-blue-700">📝 Draft restored — your previous answers have been loaded.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  try { localStorage.removeItem(`form-draft-${id}`); } catch { /* ignore */ }
+                  setFormData(() => {
+                    const blank: Record<string, any> = {};
+                    (form!.fields ?? []).forEach((f: any) => { blank[f.id] = f.type === 'checkbox' ? false : ''; });
+                    return blank;
+                  });
+                  setDraftRestored(false);
+                }}
+                className="ml-4 text-xs text-blue-600 underline hover:text-blue-800 whitespace-nowrap"
+              >
+                Clear draft
+              </button>
+            </div>
+          )}
           {errors.submit && (
             <div className="rounded-lg bg-red-50 border border-red-200 p-4">
               <p className="text-sm text-red-600">{errors.submit}</p>
