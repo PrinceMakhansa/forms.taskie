@@ -558,7 +558,10 @@ function FieldCard({
     onUpdate({ options: newOptions });
   };
 
-  const needsOptions = field.type === 'select' || field.type === 'radio';
+  const needsOptions =
+    field.type === 'select' ||
+    field.type === 'radio' ||
+    field.type === 'checkbox';
 
   return (
     <div
@@ -667,23 +670,6 @@ function FieldCard({
                 disabled={!isActive}
               />
             </div>
-          ) : field.type === 'checkbox' ? (
-            <div className="flex items-center gap-3 py-2 text-gray-400">
-              <div className="flex h-[18px] w-[18px] items-center justify-center rounded border-2 border-gray-300">
-                <svg
-                  className="h-3 w-3 text-transparent"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <span className="text-sm text-gray-500">Checkbox</span>
-            </div>
           ) : field.type === 'date' ? (
             <div className="flex items-center gap-2 border-b border-gray-200 py-2 text-gray-400">
               <span className="text-sm">Month, Day, Year</span>
@@ -702,12 +688,14 @@ function FieldCard({
               </svg>
             </div>
           ) : needsOptions ? (
-            /* Options Editor for Select/Radio */
+            /* Options Editor for Select/Radio/Checkbox */
             <div className="space-y-2.5">
               {field.options?.map((option, index) => (
                 <div key={index} className="group flex items-center gap-3">
                   {field.type === 'radio' ? (
                     <div className="h-[18px] w-[18px] rounded-full border-2 border-gray-300 flex-shrink-0" />
+                  ) : field.type === 'checkbox' ? (
+                    <div className="h-[18px] w-[18px] rounded border-2 border-gray-300 flex-shrink-0" />
                   ) : (
                     <span className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-400 flex-shrink-0">
                       {index + 1}.
@@ -751,6 +739,8 @@ function FieldCard({
                 <div className="flex items-center gap-3">
                   {field.type === 'radio' ? (
                     <div className="h-[18px] w-[18px] rounded-full border-2 border-dashed border-gray-300 flex-shrink-0" />
+                  ) : field.type === 'checkbox' ? (
+                    <div className="h-[18px] w-[18px] rounded border-2 border-dashed border-gray-300 flex-shrink-0" />
                   ) : (
                     <span className="flex h-6 w-6 items-center justify-center rounded text-xs font-medium text-gray-400 flex-shrink-0">
                       {(field.options?.length || 0) + 1}.
