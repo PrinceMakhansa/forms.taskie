@@ -21,6 +21,7 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import { FormField, FormSection } from '@/lib/validation';
 import Button from './Button';
+import RichTextInput from '@/components/RichTextInput';
 
 // ─── Types & Constants ──────────────────────────────────────────────────────
 
@@ -257,7 +258,6 @@ export default function FormBuilder({
 
     if (activeField && overField) {
       if (activeField.sectionId === overField.sectionId) {
-        // Same section reorder
         const sectionId = activeField.sectionId!;
         const sectionFields = getFieldsForSection(sectionId);
         const oldIndex = sectionFields.findIndex((f) => f.id === active.id);
@@ -273,7 +273,6 @@ export default function FormBuilder({
           ]);
         }
       } else {
-        // Cross-section move
         const fromSectionId = activeField.sectionId!;
         const toSectionId = overField.sectionId!;
         const toFields = getFieldsForSection(toSectionId);
@@ -312,7 +311,9 @@ export default function FormBuilder({
 
   // ── Save ────────────────────────────────────────────────────────────────
   const handleSave = () => {
-    const emptyLabels = fields.filter((f) => !f.label.trim());
+    const emptyLabels = fields.filter(
+      (f) => !f.label.replace(/<[^>]*>/g, '').trim()
+    );
     if (emptyLabels.length > 0) {
       alert('All fields must have a question/label');
       return;
@@ -346,7 +347,6 @@ export default function FormBuilder({
       onDragEnd={handleDragEnd}
     >
       <div className="space-y-6">
-        {/* Sections */}
         {sortedSections.map((section, sectionIndex) => {
           const sectionFields = getFieldsForSection(section.id);
           const sectionFieldIds = sectionFields.map((f) => f.id);
@@ -366,32 +366,19 @@ export default function FormBuilder({
                 <div className="p-5">
                   <div className="flex items-start gap-3">
                     <div className="flex-1">
-                      <input
-                        type="text"
+                      <RichTextInput
                         value={section.title}
-                        onChange={(e) =>
-                          updateSection(section.id, { title: e.target.value })
-                        }
+                        onChange={(val) => updateSection(section.id, { title: val })}
                         placeholder="Untitled Section"
-                        className="w-full border-none bg-transparent text-2xl font-normal text-gray-900 placeholder-gray-400 focus:outline-none focus:border-b-2 focus:border-blue-600"
-                        style={{
-                          fontFamily:
-                            "'Google Sans', 'Segoe UI', Roboto, sans-serif",
-                        }}
+                        singleLine
+                        className="w-full text-2xl font-normal text-gray-900"
+                        style={{ fontFamily: "'Google Sans', 'Segoe UI', Roboto, sans-serif" }}
                       />
-                      <textarea
+                      <RichTextInput
                         value={section.description || ''}
-                        onChange={(e) => {
-                          updateSection(section.id, {
-                            description: e.target.value,
-                          });
-                          e.target.style.height = 'auto';
-                          e.target.style.height = e.target.scrollHeight + 'px';
-                        }}
-                        ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
+                        onChange={(val) => updateSection(section.id, { description: val })}
                         placeholder="Section description"
-                        rows={1}
-                        className="mt-2 w-full border-none bg-transparent text-sm text-gray-600 placeholder-gray-400 focus:outline-none resize-none overflow-hidden"
+                        className="mt-2 w-full text-sm text-gray-600 min-h-[1.25rem]"
                       />
                     </div>
 
@@ -402,18 +389,8 @@ export default function FormBuilder({
                         className="rounded-full p-2 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
                         title="Delete section"
                       >
-                        <svg
-                          className="h-5 w-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
                       </button>
                     )}
@@ -448,18 +425,8 @@ export default function FormBuilder({
                   onClick={() => addField(section.id)}
                   className="group flex items-center gap-2 rounded-full border border-dashed border-gray-300 bg-white px-5 py-2.5 text-sm text-gray-500 shadow-sm transition-all hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600"
                 >
-                  <svg
-                    className="h-5 w-5 transition-colors group-hover:text-blue-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 4v16m8-8H4"
-                    />
+                  <svg className="h-5 w-5 transition-colors group-hover:text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   Add question
                 </button>
@@ -475,18 +442,8 @@ export default function FormBuilder({
             onClick={addSection}
             className="group flex items-center gap-2 rounded-full border border-blue-300 bg-white px-5 py-2.5 text-sm font-medium text-blue-600 shadow-sm transition-all hover:bg-blue-50 hover:border-blue-400 hover:shadow-md"
           >
-            <svg
-              className="h-5 w-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             Add section
           </button>
@@ -505,7 +462,7 @@ export default function FormBuilder({
         {draggedField ? (
           <div className="rounded-lg border-2 border-blue-400 bg-white p-4 shadow-2xl opacity-90">
             <p className="text-sm font-medium text-gray-700">
-              {draggedField.label || 'Untitled question'}
+              {draggedField.label.replace(/<[^>]*>/g, '') || 'Untitled question'}
             </p>
             <p className="mt-1 text-xs text-gray-400">
               {FIELD_TYPES.find((t) => t.value === draggedField.type)?.label}
@@ -567,18 +524,17 @@ function FieldCard({
     <div
       onClick={onFocus}
       className={`
-        relative overflow-hidden rounded-lg border bg-white transition-all duration-200 cursor-pointer
-        ${
-          isActive
-            ? 'border-transparent shadow-md ring-2 ring-blue-500'
-            : 'border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md'
+        relative rounded-lg border bg-white transition-all duration-200 cursor-pointer
+        ${isActive
+          ? 'border-transparent shadow-md ring-2 ring-blue-500'
+          : 'border-gray-200 shadow-sm hover:border-gray-300 hover:shadow-md'
         }
       `}
     >
-      {/* Left accent bar (Google Forms style) */}
+      {/* Left accent bar */}
       <div
         className={`
-          absolute left-0 top-0 h-full w-[6px] transition-all duration-200
+          absolute left-0 top-0 h-full w-[6px] rounded-l-lg transition-all duration-200
           ${isActive ? 'bg-blue-600' : 'bg-transparent'}
         `}
       />
@@ -605,19 +561,17 @@ function FieldCard({
         {/* Question + Type row */}
         <div className="mb-4 flex items-start gap-4">
           <div className="flex-1">
-            <input
-              type="text"
+            {/* ✅ FIX: removed singleLine so long questions wrap properly */}
+            <RichTextInput
               value={field.label}
-              onChange={(e) => onUpdate({ label: e.target.value })}
+              onChange={(val) => onUpdate({ label: val })}
               placeholder="Question"
               className={`
-                w-full bg-transparent pb-2 text-base text-gray-900 placeholder-gray-400 transition-all
-                border-b-2 focus:outline-none
-                ${
-                  isActive
-                    ? 'border-blue-600 bg-gray-50 rounded-t px-2 py-3'
-                    : 'border-transparent hover:border-gray-200'
-                }
+                w-full pb-2 text-base text-gray-900 transition-all
+                border-b-2
+                ${isActive
+                  ? 'border-blue-600 bg-gray-50 rounded-t px-2 py-3'
+                  : 'border-transparent hover:border-gray-200'}
               `}
             />
           </div>
@@ -639,18 +593,8 @@ function FieldCard({
                 ))}
               </select>
               <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
-                <svg
-                  className="h-4 w-4 text-gray-400"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
+                <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
             </div>
@@ -673,22 +617,11 @@ function FieldCard({
           ) : field.type === 'date' ? (
             <div className="flex items-center gap-2 border-b border-gray-200 py-2 text-gray-400">
               <span className="text-sm">Month, Day, Year</span>
-              <svg
-                className="ml-auto h-5 w-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                />
+              <svg className="ml-auto h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
             </div>
           ) : needsOptions ? (
-            /* Options Editor for Select/Radio/Checkbox */
             <div className="space-y-2.5">
               {field.options?.map((option, index) => (
                 <div key={index} className="group flex items-center gap-3">
@@ -710,31 +643,17 @@ function FieldCard({
                   {isActive && (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removeOption(index);
-                      }}
+                      onClick={(e) => { e.stopPropagation(); removeOption(index); }}
                       className="rounded-full p-1 text-gray-400 opacity-0 transition-all hover:bg-gray-100 hover:text-gray-600 group-hover:opacity-100"
                     >
-                      <svg
-                        className="h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M6 18L18 6M6 6l12 12"
-                        />
+                      <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                       </svg>
                     </button>
                   )}
                 </div>
               ))}
 
-              {/* Add Option Input */}
               {isActive && (
                 <div className="flex items-center gap-3">
                   {field.type === 'radio' ? (
@@ -751,11 +670,7 @@ function FieldCard({
                     value={optionInput}
                     onChange={(e) => setOptionInput(e.target.value)}
                     onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        addOption();
-                      }
+                      if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); addOption(); }
                     }}
                     placeholder="Add option"
                     className="flex-1 border-b border-transparent bg-transparent py-1.5 text-sm text-gray-500 placeholder-gray-400 transition-colors focus:border-gray-300 focus:outline-none"
@@ -764,10 +679,7 @@ function FieldCard({
                   {optionInput && (
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        addOption();
-                      }}
+                      onClick={(e) => { e.stopPropagation(); addOption(); }}
                       className="text-sm font-medium text-blue-600 hover:text-blue-700"
                     >
                       Add
@@ -776,17 +688,12 @@ function FieldCard({
                 </div>
               )}
 
-              {/* Quick Add */}
               {isActive && (
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    const newOptions = [
-                      ...(field.options || []),
-                      `Option ${(field.options?.length || 0) + 1}`,
-                    ];
-                    onUpdate({ options: newOptions });
+                    onUpdate({ options: [...(field.options || []), `Option ${(field.options?.length || 0) + 1}`] });
                   }}
                   className="ml-9 text-sm text-blue-600 hover:text-blue-700 hover:underline"
                 >
@@ -795,17 +702,12 @@ function FieldCard({
               )}
             </div>
           ) : (
-            /* Text/Email Input Preview */
             <div className="border-b border-gray-200 py-2">
               <input
                 type="text"
                 value={field.placeholder || ''}
                 onChange={(e) => onUpdate({ placeholder: e.target.value })}
-                placeholder={
-                  field.type === 'email'
-                    ? 'email@example.com'
-                    : 'Short answer text'
-                }
+                placeholder={field.type === 'email' ? 'email@example.com' : 'Short answer text'}
                 className="w-full bg-transparent text-sm text-gray-400 placeholder-gray-400 focus:outline-none"
                 disabled={!isActive}
               />
@@ -813,86 +715,42 @@ function FieldCard({
           )}
         </div>
 
-        {/* Field Footer - Actions (only visible when active) */}
+        {/* Field Footer */}
         {isActive && (
           <div className="flex items-center justify-end border-t border-gray-100 pt-4">
             <div className="flex items-center gap-1">
-              {/* Duplicate */}
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDuplicate();
-                }}
+                onClick={(e) => { e.stopPropagation(); onDuplicate(); }}
                 className="rounded-full p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
                 title="Duplicate"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"
-                  />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
               </button>
 
-              {/* Delete */}
               <button
                 type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete();
-                }}
+                onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="rounded-full p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-red-500"
                 title="Delete"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                  />
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                 </svg>
               </button>
 
-              {/* Separator */}
               <div className="mx-2 h-7 w-px bg-gray-200" />
 
-              {/* Required Toggle */}
-              <label
-                className="flex items-center gap-2.5 cursor-pointer"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <label className="flex items-center gap-2.5 cursor-pointer" onClick={(e) => e.stopPropagation()}>
                 <span className="text-sm text-gray-600">Required</span>
                 <button
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onUpdate({ required: !field.required });
-                  }}
-                  className={`
-                    relative h-6 w-11 rounded-full transition-colors duration-200
-                    ${field.required ? 'bg-blue-600' : 'bg-gray-300'}
-                  `}
+                  onClick={(e) => { e.stopPropagation(); onUpdate({ required: !field.required }); }}
+                  className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${field.required ? 'bg-blue-600' : 'bg-gray-300'}`}
                 >
-                  <span
-                    className={`
-                      absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200
-                      ${field.required ? 'translate-x-5' : 'translate-x-0'}
-                    `}
-                  />
+                  <span className={`absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${field.required ? 'translate-x-5' : 'translate-x-0'}`} />
                 </button>
               </label>
             </div>

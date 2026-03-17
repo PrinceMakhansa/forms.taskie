@@ -23,10 +23,16 @@ export default function FormFieldComponent({
 
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-      <label htmlFor={field.id} className="block text-base text-gray-900 mb-3">
-        {field.label}
-        {field.required && <span className="text-red-600 ml-1">*</span>}
-      </label>
+      {/* ✅ Render label as HTML so bold/italic/links display correctly */}
+      {field.type !== 'checkbox' && (
+        <label htmlFor={field.id} className="block text-base text-gray-900 mb-3">
+          <span
+            dangerouslySetInnerHTML={{ __html: field.label }}
+            className="[&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+          />
+          {field.required && <span className="text-red-600 ml-1">*</span>}
+        </label>
+      )}
 
       {field.type === 'textarea' ? (
         <textarea
@@ -78,26 +84,36 @@ export default function FormFieldComponent({
           ))}
         </fieldset>
       ) : field.type === 'checkbox' ? (
-        <label className="flex items-center gap-3 cursor-pointer group">
-          <div className={`flex h-[18px] w-[18px] items-center justify-center rounded border-2 transition-colors ${
-            value ? 'border-blue-600 bg-blue-600' : 'border-gray-300 group-hover:border-gray-400'
-          }`}>
-            {value && (
-              <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
-              </svg>
-            )}
+        // ✅ Fixed: label is shown above, not duplicated inside the checkbox row
+        <div>
+          <div className="mb-3 text-base text-gray-900">
+            <span
+              dangerouslySetInnerHTML={{ __html: field.label }}
+              className="[&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+            />
+            {field.required && <span className="text-red-600 ml-1">*</span>}
           </div>
-          <input
-            id={field.id}
-            type="checkbox"
-            name={field.id}
-            checked={value || false}
-            onChange={(e) => onChange(e.target.checked)}
-            className="sr-only"
-          />
-          <span className="text-sm text-gray-700">{field.label}</span>
-        </label>
+          <label className="flex items-center gap-3 cursor-pointer group">
+            <div className={`flex h-[18px] w-[18px] items-center justify-center rounded border-2 transition-colors ${
+              value ? 'border-blue-600 bg-blue-600' : 'border-gray-300 group-hover:border-gray-400'
+            }`}>
+              {value && (
+                <svg className="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <input
+              id={field.id}
+              type="checkbox"
+              name={field.id}
+              checked={value || false}
+              onChange={(e) => onChange(e.target.checked)}
+              className="sr-only"
+            />
+            <span className="text-sm text-gray-500 italic">Check to confirm</span>
+          </label>
+        </div>
       ) : (
         <input
           id={field.id}
@@ -116,4 +132,4 @@ export default function FormFieldComponent({
       )}
     </div>
   );
-}
+} 

@@ -24,24 +24,30 @@ export default function FormContainer({
               alt="Form banner"
               className="w-full h-auto max-h-[200px] object-cover"
               onError={(e) => {
-                // Hide the image if it fails to load
                 (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           </div>
         )}
+
         {/* Google Forms–style colored top bar */}
         <div className="h-[10px] w-full bg-blue-600 rounded-t-lg" />
 
         <div className="p-7 sm:p-9">
           <div className="mb-8">
-            <h2 className="text-2xl font-normal text-gray-900" style={{ fontFamily: "'Google Sans', 'Segoe UI', Roboto, sans-serif" }}>
-              {title}
-            </h2>
+            {/* ✅ Render title as HTML so bold/italic/links display correctly */}
+            <h2
+              className="text-2xl font-normal text-gray-900"
+              style={{ fontFamily: "'Google Sans', 'Segoe UI', Roboto, sans-serif" }}
+              dangerouslySetInnerHTML={{ __html: title }}
+            />
+
+            {/* ✅ Render description as HTML */}
             {description && (
-              <p className="mt-3 text-sm text-gray-600">
-                {description}
-              </p>
+              <p
+                className="mt-3 text-sm text-gray-600 [&_a]:text-blue-600 [&_a]:underline [&_a]:hover:text-blue-800"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
             )}
           </div>
 

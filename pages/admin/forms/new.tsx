@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession, signIn } from 'next-auth/react';
 import Layout from '@/components/Layout';
 import FormBuilder from '@/components/FormBuilder';
+import RichTextInput from '@/components/RichTextInput';
 import { FormField, FormSection } from '@/lib/validation';
 
 export default function NewFormPage() {
@@ -20,16 +21,13 @@ export default function NewFormPage() {
     }
   }, [status]);
 
-  // Check admin status
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
       fetch('/api/auth/check-admin')
         .then(res => res.json())
         .then(data => {
           setIsAdmin(data.isAdmin);
-          if (!data.isAdmin) {
-            router.push('/');
-          }
+          if (!data.isAdmin) router.push('/');
         })
         .catch(() => {
           setIsAdmin(false);
@@ -53,12 +51,11 @@ export default function NewFormPage() {
     );
   }
 
-  if (status === 'unauthenticated') {
-    return null;
-  }
+  if (status === 'unauthenticated') return null;
 
   const handleSave = async (fields: FormField[], sections: FormSection[]) => {
-    if (!title.trim()) {
+    const plainTitle = title.replace(/<[^>]*>/g, '').trim();
+    if (!plainTitle) {
       setError('Please enter a form title');
       return;
     }
@@ -69,9 +66,7 @@ export default function NewFormPage() {
     try {
       const response = await fetch('/api/forms', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: title.trim(),
           description: description.trim(),
@@ -109,34 +104,36 @@ export default function NewFormPage() {
           Back to Dashboard
         </button>
 
-        {/* Form Header - Google Forms style */}
-        <div className="mb-10 overflow-hidden rounded-xl border border-warm-gray-200 bg-white shadow-soft opacity-0 animate-fadeInUp" style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}>
-          <div className="h-[6px] w-full bg-blue-600" />
-          <div className="p-7">
-            <div className="pb-6">
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Untitled Form"
-                className="w-full border-none bg-transparent text-4xl font-bold text-warm-gray-900 placeholder-warm-gray-400 focus:outline-none"
-              />
-              <textarea
-                value={description}
-                onChange={(e) => {
-                  setDescription(e.target.value);
-                  e.target.style.height = 'auto';
-                  e.target.style.height = e.target.scrollHeight + 'px';
-                }}
-                ref={(el) => { if (el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } }}
-                placeholder="Form description (optional)"
-                rows={1}
-                className="mt-3 w-full border-none bg-transparent text-warm-gray-600 placeholder-warm-gray-400 focus:outline-none resize-none overflow-hidden"
-              />
-            </div>
+        {/* Header card — styled to match section cards */}
+        <div
+          className="mb-3 overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm opacity-0 animate-fadeInUp"
+          style={{ animationDelay: '0ms', animationFillMode: 'forwards' }}
+        >
+          <div className="h-[10px] w-full bg-blue-600 rounded-t-lg" />
+          <div className="p-5">
+            {/* Form title */}
+            <RichTextInput
+              value={title}
+              onChange={setTitle}
+              placeholder="Untitled Form"
+              singleLine
+              className="w-full text-2xl font-normal text-gray-900"
+              style={{ fontFamily: "'Google Sans', 'Segoe UI', Roboto, sans-serif" }}
+            />
+
+            {/* Divider */}
+            <div className="mt-3 mb-3 border-b border-gray-200" />
+
+            {/* Form description */}
+            <RichTextInput
+              value={description}
+              onChange={setDescription}
+              placeholder="Form description (optional)"
+              className="w-full text-sm text-gray-600 min-h-[1.25rem]"
+            />
 
             {error && (
-              <div className="mt-4 rounded-lg bg-red-50 p-4 text-red-700">
+              <div className="mt-4 rounded-lg bg-red-50 p-4 text-red-700 text-sm">
                 {error}
               </div>
             )}
@@ -144,10 +141,10 @@ export default function NewFormPage() {
         </div>
 
         {/* Form Builder */}
-        <div className="rounded-xl border border-warm-gray-200 bg-white p-7 shadow-soft opacity-0 animate-fadeInUp" style={{ animationDelay: '120ms', animationFillMode: 'forwards' }}>
-          <h3 className="mb-7 text-lg font-semibold text-warm-gray-900">
-            Form Fields
-          </h3>
+        <div
+          className="opacity-0 animate-fadeInUp"
+          style={{ animationDelay: '120ms', animationFillMode: 'forwards' }}
+        >
           <FormBuilder onSave={handleSave} isLoading={isLoading} />
         </div>
       </div>
